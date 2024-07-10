@@ -6,6 +6,7 @@ interface Point {
 interface Drawing {
     points: Point[];
     bounds: DrawingBounds;
+    selected: boolean;
 }
 
 interface DrawingBounds {

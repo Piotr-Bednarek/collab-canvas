@@ -1,8 +1,8 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
-import { ControlContainer } from '@angular/forms';
 import { RouterOutlet } from '@angular/router';
+import { Drawing, Drawings } from './classes';
 import exampleDrawings from './example.json';
-import { Drawing, DrawingBounds, Drawings, Point } from './interfaces';
+import { Point } from './interfaces';
 
 @Component({
     selector: 'app-root',
@@ -22,20 +22,28 @@ export class AppComponent {
     private moveStartY: number = 0;
     private isMoving: boolean = false;
 
+    private hoveredDrawing: Drawing | null = null;
+
+    private selectedDrawing: Drawing | null = null;
+
     translateX: number = 0;
     translateY: number = 0;
 
     points: Point[] = [];
-    bounds: DrawingBounds = { top: 0, left: 0, bottom: 0, right: 0 };
+    // bounds: DrawingBounds = { top: 0, left: 0, bottom: 0, right: 0 };
 
-    drawing: Drawing = {
-        points: [],
-        bounds: { top: 0, left: 0, bottom: 0, right: 0 },
-    };
+    drawing: Drawing | null = null;
+    drawings = new Drawings();
 
-    drawings: Drawings = { drawings: [] };
+    // drawing: Drawing = {
+    //     points: [],
+    //     bounds: { top: 0, left: 0, bottom: 0, right: 0 },
+    //     selected: false,
+    // };
 
-    cursorMode = 'move'; // 'draw' or 'move'
+    // drawings: Drawings = { drawings: [] };
+
+    cursorMode = 'draw'; // 'draw' or 'move'
 
     ngAfterViewInit() {
         if (this.canvas && this.canvas.nativeElement) {
@@ -78,6 +86,8 @@ export class AppComponent {
         //     x2: this.translateX,
         //     y2: this.translateY,
         // });
+
+        this.handleMouseHoverCheck($event);
         if (this.cursorMode === 'move') {
             if (!this.isMoving) return;
 
@@ -98,6 +108,9 @@ export class AppComponent {
         }
 
         if (!this.isDrawing) return;
+
+        if (!this.drawing) return;
+
         this.applyStyles();
 
         this.context?.lineTo($event.offsetX, $event.offsetY);
@@ -108,18 +121,32 @@ export class AppComponent {
             y: $event.offsetY + this.translateY,
         };
 
-        this.points?.push(point);
+        // this.points?.push(point);
+
+        this.drawing.addPoint(point);
+        this.drawing.draw(this.context!, this.translateX, this.translateY);
+        // this.draw();
+        // this.redrawCanvas();
+
+        // this.redrawCanvas();
 
         // console.log(this.points);
     }
 
     onMouseDown($event: MouseEvent) {
+        if (this.hoveredDrawing) {
+            this.selectedDrawing = this.hoveredDrawing;
+            console.log('Selected drawing');
+        }
+
         if (this.cursorMode === 'move') {
             this.moveStartX = $event.offsetX;
             this.moveStartY = $event.offsetY;
             this.isMoving = true;
         } else if (this.cursorMode === 'draw') {
             this.isDrawing = true;
+
+            this.drawing = new Drawing();
 
             this.context?.beginPath();
             this.context?.moveTo($event.offsetX, $event.offsetY);
@@ -134,132 +161,40 @@ export class AppComponent {
 
             this.addDrawing();
 
-            console.log(this.drawings);
+            // console.log(this.drawings);
         }
     }
 
     addDrawing() {
-        // console.log(this.drawing);
+        if (!this.drawing) return;
 
-        this.getDrawingBounds();
+        this.drawings.addDrawing(this.drawing);
+        this.drawing.finished = true;
 
-        console.log(this.bounds);
-
-        this.drawing = {
-            points: this.points,
-            bounds: this.bounds!,
-        };
-
-        this.drawings?.drawings.push(this.drawing);
-
-        this.redrawCanvas();
-
-        // this.context?.beginPath();
-        // this.context?.rect(
-        //     this.drawing.bounds.left - this.translateX * 2,
-        //     this.drawing.bounds.top - this.translateY * 2,
-        //     this.drawing.bounds.right - this.drawing.bounds.left,
-        //     this.drawing.bounds.bottom - this.drawing.bounds.top
-        // );
-        // this.context?.stroke();
-
-        this.cleanVariables();
-    }
-
-    getDrawingBounds() {
-        this.bounds = {
-            top: this.points.reduce(
-                (acc, point) => Math.min(acc, point.y),
-                Infinity
-            ),
-            left: this.points.reduce(
-                (acc, point) => Math.min(acc, point.x),
-                Infinity
-            ),
-            bottom: this.points.reduce(
-                (acc, point) => Math.max(acc, point.y),
-                -Infinity
-            ),
-            right: this.points.reduce(
-                (acc, point) => Math.max(acc, point.x),
-                -Infinity
-            ),
-        };
-    }
-
-    cleanVariables() {
-        this.points = [];
-        this.drawing = {
-            points: [],
-            bounds: { top: 0, left: 0, bottom: 0, right: 0 },
-        };
-        this.bounds = { top: 0, left: 0, bottom: 0, right: 0 };
-    }
-
-    drawRectangleAroundDrawing(drawing: Drawing) {
-        this.context?.beginPath();
-        this.context?.rect(
-            drawing.bounds.left - this.translateX,
-            drawing.bounds.top - this.translateY,
-            drawing.bounds.right - drawing.bounds.left,
-            drawing.bounds.bottom - drawing.bounds.top
+        this.drawing.drawRectangle(
+            this.context!,
+            this.translateX,
+            this.translateY
         );
-        this.context?.stroke();
+
+        this.drawings.logDrawings();
     }
 
     handleImport() {
         console.log('Importing drawings');
-        this.drawings = exampleDrawings;
 
-        this.drawImportedDrawings();
+        // this.drawings.logDrawings();
+        // this.drawings.drawings = exampleDrawings;
 
-        console.log(exampleDrawings);
+        // this.drawImportedDrawings();
+
+        // console.log(exampleDrawings);
     }
 
-    drawImportedDrawings() {
+    draw() {
         this.applyStyles();
 
-        this.drawings.drawings.forEach((drawing) => {
-            this.context?.beginPath();
-            this.context?.moveTo(
-                drawing.points[0].x - this.translateX,
-                drawing.points[0].y - this.translateY
-            );
-
-            drawing.points.forEach((point) => {
-                this.context?.lineTo(
-                    point.x - this.translateX,
-                    point.y - this.translateY
-                );
-            });
-
-            this.context?.stroke();
-
-            this.drawRectangleAroundDrawing(drawing);
-        });
-    }
-
-    drawDrawings() {
-        this.applyStyles();
-
-        this.drawings.drawings.forEach((drawing) => {
-            this.context?.beginPath();
-            this.context?.moveTo(
-                drawing.points[0].x - this.translateX,
-                drawing.points[0].y - this.translateY
-            );
-
-            drawing.points.forEach((point) => {
-                this.context?.lineTo(
-                    point.x - this.translateX,
-                    point.y - this.translateY
-                );
-            });
-
-            this.context?.stroke();
-
-            this.drawRectangleAroundDrawing(drawing);
-        });
+        this.drawings.draw(this.context!, this.translateX, this.translateY);
     }
 
     handleCursorModeSwitch() {
@@ -327,6 +262,13 @@ export class AppComponent {
         this.drawGrid();
 
         // this.drawImportedDrawings();
-        this.drawDrawings();
+        this.draw();
+    }
+
+    handleMouseHoverCheck($event: MouseEvent) {
+        this.drawings.checkHover(
+            $event.offsetX + this.translateX,
+            $event.offsetY + this.translateY
+        );
     }
 }
