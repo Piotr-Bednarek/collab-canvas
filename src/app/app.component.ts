@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Drawing, Drawings } from './classes';
 import exampleDrawings from './example.json';
@@ -30,20 +30,11 @@ export class AppComponent {
     translateY: number = 0;
 
     points: Point[] = [];
-    // bounds: DrawingBounds = { top: 0, left: 0, bottom: 0, right: 0 };
 
     drawing: Drawing | null = null;
     drawings = new Drawings();
 
-    // drawing: Drawing = {
-    //     points: [],
-    //     bounds: { top: 0, left: 0, bottom: 0, right: 0 },
-    //     selected: false,
-    // };
-
-    // drawings: Drawings = { drawings: [] };
-
-    cursorMode = 'draw'; // 'draw' or 'move'
+    cursorMode = 'move'; // 'draw' or 'move'
 
     ngAfterViewInit() {
         if (this.canvas && this.canvas.nativeElement) {
@@ -96,15 +87,18 @@ export class AppComponent {
 
             // console.log(this.translateX, this.translateY, dx, dy);
 
-            this.context?.translate(dx, dy);
+            // this.context?.translate(dx, dy);
+
+            console.log(
+                'mouseX: ',
+                $event.offsetX + this.translateX,
+                'mouseY: ',
+                $event.offsetY + this.translateY
+            );
             this.translateCanvas(dx, dy);
 
             this.moveStartX = $event.offsetX;
             this.moveStartY = $event.offsetY;
-
-            // console.log('Moving canvas');
-
-            this.redrawCanvas();
         }
 
         if (!this.isDrawing) return;
@@ -112,9 +106,6 @@ export class AppComponent {
         if (!this.drawing) return;
 
         this.applyStyles();
-
-        this.context?.lineTo($event.offsetX, $event.offsetY);
-        this.context?.stroke();
 
         let point: Point = {
             x: $event.offsetX + this.translateX,
@@ -134,11 +125,6 @@ export class AppComponent {
     }
 
     onMouseDown($event: MouseEvent) {
-        if (this.hoveredDrawing) {
-            this.selectedDrawing = this.hoveredDrawing;
-            console.log('Selected drawing');
-        }
-
         if (this.cursorMode === 'move') {
             this.moveStartX = $event.offsetX;
             this.moveStartY = $event.offsetY;
@@ -148,8 +134,8 @@ export class AppComponent {
 
             this.drawing = new Drawing();
 
-            this.context?.beginPath();
-            this.context?.moveTo($event.offsetX, $event.offsetY);
+            // this.context?.beginPath();
+            // this.context?.moveTo($event.offsetX, $event.offsetY);
         }
     }
 
@@ -163,6 +149,11 @@ export class AppComponent {
 
             // console.log(this.drawings);
         }
+    }
+
+    onClick($event: MouseEvent) {
+        console.log('Click');
+        this.handleMouseSelect();
     }
 
     addDrawing() {
@@ -216,8 +207,6 @@ export class AppComponent {
     }
 
     drawGrid() {
-        this.clearCanvas();
-
         const gridSize = 40;
 
         const context = this.canvas!.nativeElement.getContext('2d');
@@ -245,6 +234,17 @@ export class AppComponent {
         }
         context.strokeStyle = '#ccc';
         context.stroke();
+
+        this.context?.beginPath();
+        this.context?.arc(
+            0 - this.translateX,
+            0 - this.translateY,
+            5,
+            0,
+            2 * Math.PI
+        );
+        context.fillStyle = 'black';
+        this.context?.fill();
     }
 
     translateCanvas(dx: number, dy: number) {
@@ -255,20 +255,55 @@ export class AppComponent {
         this.translateX -= dx;
         this.translateY -= dy;
 
+        // console.log('Translating canvas');
+        // console.log('tX: ', this.translateX, 'tY: ', this.translateY);
+        // console.log('dx: ', dx, 'dy: ', dy);
+        // console.log(
+        //     'moveStartX: ',
+        //     this.moveStartX,
+        //     'moveStartY: ',
+        //     this.moveStartY
+        // );
+
         this.redrawCanvas();
     }
 
     redrawCanvas() {
-        this.drawGrid();
+        this.clearCanvas();
+
+        // this.drawGrid();
 
         // this.drawImportedDrawings();
         this.draw();
     }
 
     handleMouseHoverCheck($event: MouseEvent) {
+        console.log('Checking hover');
         this.drawings.checkHover(
             $event.offsetX + this.translateX,
             $event.offsetY + this.translateY
         );
+
+        this.redrawCanvas();
+
+        // console.log('tX: ', this.translateX, 'tY: ', this.translateY);
+    }
+
+    handleMouseSelect() {
+        console.log('Selecting drawing');
+
+        this.drawings.handleDrawingSelect();
+
+        this.redrawCanvas();
+    }
+
+    @HostListener('window:keydown.1', ['$event'])
+    changeCursorToDraw() {
+        this.cursorMode = 'draw';
+    }
+
+    @HostListener('window:keydown.2', ['$event'])
+    changeCursorToMove() {
+        this.cursorMode = 'move';
     }
 }

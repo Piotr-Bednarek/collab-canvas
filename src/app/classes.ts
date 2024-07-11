@@ -3,7 +3,8 @@ import { DrawingBounds, Point } from './interfaces';
 class Drawing implements Drawing {
     points: Point[];
     bounds: DrawingBounds;
-    selected: boolean;
+    isHovered: boolean;
+    isSelected: boolean = false;
     finished: boolean = false;
     constructor(
         points: Point[] = [],
@@ -12,7 +13,7 @@ class Drawing implements Drawing {
     ) {
         this.points = points;
         this.bounds = bounds;
-        this.selected = selected;
+        this.isHovered = selected;
     }
 
     addPoint(point: Point) {
@@ -31,7 +32,7 @@ class Drawing implements Drawing {
     }
 
     logDrawing() {
-        console.log(this.points.length, this.bounds, this.selected);
+        console.log(this.points.length, this.bounds, this.isHovered);
     }
 
     draw(
@@ -66,20 +67,17 @@ class Drawing implements Drawing {
         translateX: number,
         translateY: number
     ) {
-        ctx.strokeStyle = this.selected ? 'red' : 'black';
-
-        ctx.beginPath();
+        ctx.strokeStyle = this.isHovered ? 'red' : 'black';
+        ctx.strokeStyle = this.isSelected ? 'blue' : ctx.strokeStyle;
 
         // console.log('Drawing bounds:', this.bounds);
 
-        ctx.rect(
+        ctx.strokeRect(
             this.bounds.left - translateX,
             this.bounds.top - translateY,
             this.bounds.right - this.bounds.left,
             this.bounds.bottom - this.bounds.top
         );
-
-        ctx.stroke();
 
         ctx.strokeStyle = 'black';
     }
@@ -87,6 +85,7 @@ class Drawing implements Drawing {
 
 class Drawings implements Drawings {
     drawings: Drawing[];
+    hoveredDrawing: Drawing | null = null;
     constructor(drawings: Drawing[] = []) {
         this.drawings = drawings;
     }
@@ -115,17 +114,37 @@ class Drawings implements Drawings {
     }
 
     checkHover(x: number, y: number) {
-        for (const drawing of this.drawings) {
+        this.hoveredDrawing = null;
+
+        for (let i = this.drawings.length - 1; i >= 0; i--) {
+            const drawing = this.drawings[i];
             if (
                 x > drawing.bounds.left &&
                 x < drawing.bounds.right &&
                 y > drawing.bounds.top &&
                 y < drawing.bounds.bottom
             ) {
-                drawing.selected = true;
+                drawing.isHovered = true;
+                this.hoveredDrawing = drawing;
+                break;
             } else {
-                drawing.selected = false;
+                drawing.isHovered = false;
             }
+        }
+
+        // console.log(this.hoveredDrawing?.bounds);
+        // console.log('x: ', x, 'y: ', y);
+
+        if (this.hoveredDrawing) {
+            this.drawings.forEach((d) => {
+                if (d !== this.hoveredDrawing) d.isHovered = false;
+            });
+        }
+    }
+
+    handleDrawingSelect() {
+        if (this.hoveredDrawing) {
+            this.hoveredDrawing.isSelected = true;
         }
     }
 }
