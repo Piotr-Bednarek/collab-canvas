@@ -1,10 +1,17 @@
-interface Point {
+interface PointType {
     x: number;
     y: number;
 }
 
+interface AnchorType {
+    x: number;
+    y: number;
+    size: number;
+    isSelected: boolean;
+}
+
 interface Drawing {
-    points: Point[];
+    points: PointType[];
     bounds: DrawingBounds;
     selected: boolean;
 }
@@ -16,8 +23,4 @@ interface DrawingBounds {
     right: number;
 }
 
-interface Drawings {
-    drawings: Drawing[];
-}
-
-export { Drawing, DrawingBounds, Drawings, Point };
+export { AnchorType, Drawing, DrawingBounds, PointType };
