@@ -13,28 +13,31 @@ class Canvas {
     translateX: number = 0;
     translateY: number = 0;
 
+    moveStartX: number = 0;
+    moveStartY: number = 0;
+
     gridSize = 40;
 
     drawing: Drawing | null = null;
 
-    constructor(
-        drawings: Drawing[] = [],
-        canvasElementRef: ElementRef,
-        context: CanvasRenderingContext2D
-    ) {
+    isMovingDrawing: boolean = false;
+
+    constructor(drawings: Drawing[] = [], canvasElementRef: ElementRef, context: CanvasRenderingContext2D) {
         this.drawings = drawings;
         this.canvasElementRef = canvasElementRef;
         this.context = context;
     }
 
     addDrawing() {
+        // console.log(this.drawing);
+        if (!this.drawing) return false;
+
         this.drawing?.finish();
         this.drawings.push(this.drawing!);
 
         this.drawing = null;
 
-        console.log('Drawing added');
-        console.log('Drawings:', this.drawings);
+        return true;
     }
 
     addPointToDrawing(x: number, y: number) {
@@ -42,19 +45,10 @@ class Canvas {
             this.drawing = new Drawing();
         }
 
-        this.drawing.addPoint(
-            new Point(x + this.translateX, y + this.translateY)
-        );
+        this.drawing.addPoint(new Point(x + this.translateX, y + this.translateY));
 
         this.drawUnfinished();
     }
-
-    // this.drawing.addPoint(
-    //         new Point(
-    //             $event.offsetX + this.translateX,
-    //             $event.offsetY + this.translateY
-    //         )
-    //     );
 
     logDrawings() {
         for (const drawing of this.drawings) {
@@ -80,10 +74,12 @@ class Canvas {
     }
 
     checkHover(x: number, y: number) {
-        if (this.selectedDrawing) return;
+        // if (this.selectedDrawing) return;
 
         x = x + this.translateX;
         y = y + this.translateY;
+
+        // this.clearSelected();
 
         this.hoveredDrawing = null;
 
@@ -103,29 +99,62 @@ class Canvas {
             }
         }
 
-        console.log(this.hoveredDrawing?.bounds);
-        console.log(this.hoveredDrawing?.isHovered);
-        console.log('x: ', x, 'y: ', y);
+        // console.log(this.hoveredDrawing?.bounds);
+        // console.log(this.hoveredDrawing?.isHovered);
+        // console.log('x: ', x, 'y: ', y);
 
         if (this.hoveredDrawing) {
-            this.drawings.forEach((d) => {
-                if (d !== this.hoveredDrawing) d.isHovered = false;
+            this.drawings.forEach((drawing) => {
+                if (drawing !== this.hoveredDrawing) {
+                    drawing.isHovered = false;
+                }
             });
         }
     }
 
-    handleDrawingSelect() {
-        if (this.hoveredDrawing) {
-            this.hoveredDrawing.isSelected = true;
-            this.selectedDrawing = this.hoveredDrawing;
-        }
+    clearSelected() {
+        // console.log('selected: ', this.selectedDrawing);
+        // console.log('hovered: ', this.hoveredDrawing);
+
+        if (!this.selectedDrawing) return;
+
+        if (this.selectedDrawing === this.hoveredDrawing) return;
+
+        // if (!this.selectedDrawing.isHovered) {
+        this.selectedDrawing.isSelected = false;
+        this.selectedDrawing.clearSelectedAnchor();
+        this.selectedDrawing = null;
+        // }
+
+        // this.selectedDrawing.isSelected = false;
     }
 
-    clearSelected() {
-        if (this.selectedDrawing) {
-            this.selectedDrawing.isSelected = false;
-            this.selectedDrawing = null;
+    checkHoverAnchor(x: number, y: number) {
+        if (!this.hoveredDrawing) return;
+
+        x = x + this.translateX;
+        y = y + this.translateY;
+
+        this.hoveredDrawing.checkHoverAnchor(x, y);
+    }
+
+    handleDrawingSelect() {
+        if (this.isMovingDrawing) return;
+
+        if (!this.hoveredDrawing) {
+            this.clearSelected();
+            return;
         }
+        if (this.selectedDrawing) this.selectedDrawing.isSelected = false;
+
+        this.hoveredDrawing.isSelected = true;
+        this.selectedDrawing = this.hoveredDrawing;
+    }
+
+    handleAnchorSelect() {
+        if (!this.hoveredDrawing) return;
+
+        this.hoveredDrawing.handleAnchorSelect();
     }
 
     drawGrid() {
@@ -138,19 +167,11 @@ class Canvas {
         if (!context) return;
 
         this.context?.beginPath();
-        for (
-            let x = -this.translateX % this.gridSize;
-            x < canvasWidth;
-            x += this.gridSize
-        ) {
+        for (let x = -this.translateX % this.gridSize; x < canvasWidth; x += this.gridSize) {
             context.moveTo(x, 0);
             context.lineTo(x, canvasHeight);
         }
-        for (
-            let y = -this.translateY % this.gridSize;
-            y < canvasHeight;
-            y += this.gridSize
-        ) {
+        for (let y = -this.translateY % this.gridSize; y < canvasHeight; y += this.gridSize) {
             context.moveTo(0, y);
             context.lineTo(canvasWidth, y);
         }
@@ -158,25 +179,13 @@ class Canvas {
         context.stroke();
 
         this.context?.beginPath();
-        this.context?.arc(
-            0 - this.translateX,
-            0 - this.translateY,
-            5,
-            0,
-            2 * Math.PI
-        );
+        this.context?.arc(0 - this.translateX, 0 - this.translateY, 5, 0, 2 * Math.PI);
         context.fillStyle = 'black';
         this.context?.fill();
     }
 
-    updateTranslate(dx: number, dy: number) {
-        this.translateX -= dx;
-        this.translateY -= dy;
-    }
-
     clear() {
-        // console.log('clearing');
-        this.context?.setTransform(1, 0, 0, 1, 0, 0); // Reset transformation matrix to the default state
+        this.context?.setTransform(1, 0, 0, 1, 0, 0);
         this.context?.clearRect(
             0,
             0,
@@ -185,17 +194,47 @@ class Canvas {
         );
     }
 
-    translateCanvas(dx: number, dy: number) {
+    handleMouseMove(x: number, y: number) {
         if (!this.context) return;
 
-        this.context.translate(dx, dy);
+        const dx = x - this.moveStartX;
+        const dy = y - this.moveStartY;
 
-        this.translateX -= dx;
-        this.translateY -= dy;
+        // console.log(this.hoveredDrawing);
 
-        this.updateTranslate(dx, dy);
+        if (this.selectedDrawing) {
+            this.isMovingDrawing = true;
+            this.moveSelectedDrawing(dx, dy);
+            console.log('translate');
+        } else if (!this.isMovingDrawing) {
+            this.context.translate(dx, dy);
+            this.translateX -= dx;
+            this.translateY -= dy;
+        }
+
+        this.moveStart(x, y);
 
         this.draw();
+        this.handleDrawingSelect();
+    }
+
+    moveStart(x: number, y: number) {
+        this.moveStartX = x;
+        this.moveStartY = y;
+    }
+
+    moveSelectedDrawing(x: number, y: number) {
+        if (!this.selectedDrawing) return;
+
+        console.log('move selected drawing');
+        console.log('x: ', x, 'y: ', y);
+
+        this.selectedDrawing.move(x, y);
+        this.draw();
+    }
+
+    handleMouseUp() {
+        this.isMovingDrawing = false;
     }
 }
 
