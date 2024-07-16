@@ -1,4 +1,4 @@
-import { DrawingBounds } from '../interfaces';
+import { DrawingBounds } from '../app/interfaces';
 import { Anchor } from './Anchor';
 import { Point } from './Point';
 
