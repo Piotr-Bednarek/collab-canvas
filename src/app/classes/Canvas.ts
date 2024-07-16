@@ -204,8 +204,8 @@ class Canvas {
 
         if (this.selectedDrawing) {
             this.isMovingDrawing = true;
-            this.moveSelectedDrawing(dx, dy);
-            console.log('translate');
+            this.handleSelectedDrawingMouseMove(dx, dy);
+            // console.log('translate');
         } else if (!this.isMovingDrawing) {
             this.context.translate(dx, dy);
             this.translateX -= dx;
@@ -223,18 +223,19 @@ class Canvas {
         this.moveStartY = y;
     }
 
-    moveSelectedDrawing(x: number, y: number) {
+    handleSelectedDrawingMouseMove(x: number, y: number) {
         if (!this.selectedDrawing) return;
 
-        console.log('move selected drawing');
-        console.log('x: ', x, 'y: ', y);
+        // console.log('move selected drawing');
+        // console.log('x: ', x, 'y: ', y);
 
-        this.selectedDrawing.move(x, y);
+        this.selectedDrawing.handleMouseMove(x, y);
         this.draw();
     }
 
     handleMouseUp() {
         this.isMovingDrawing = false;
+        this.selectedDrawing?.handleMouseUp();
     }
 }
 

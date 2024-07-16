@@ -6,6 +6,7 @@ class Anchor implements AnchorType {
     size: number;
     isHovered: boolean;
     isSelected: boolean;
+
     constructor(x: number, y: number, size: number) {
         this.x = x;
         this.y = y;
