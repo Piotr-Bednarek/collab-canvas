@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
-import { AppComponent } from './app.component';
 import { CanvasPageComponent } from './canvas-page/canvas-page.component';
 import { LandingPageComponent } from './landing-page/landing-page.component';
 import { LoginPageComponent } from './login-page/login-page.component';
+import { UserProfilePageComponent } from './user-profile-page/user-profile-page.component';
 
 export const routes: Routes = [
     {
@@ -16,5 +16,9 @@ export const routes: Routes = [
     {
         path: 'canvas',
         component: CanvasPageComponent,
+    },
+    {
+        path: 'profile',
+        component: UserProfilePageComponent,
     },
 ];

@@ -1,0 +1,16 @@
+<main>
+    <h1>PROFILE PAGE</h1>
+    <p>uid: {{ user?.uid }}</p>
+    <p>displayName: {{ user?.displayName }}</p>
+    <p>email: {{ user?.email }}</p>
+    <img src="{{ user?.photoURL }}" />
+    <div>
+        <h1>Your canvases:</h1>
+        <button (click)="createNewCanvas()">CREATE NEW CANVAS</button>
+    </div>
+
+    <div *ngFor="let canvas of canvases$ | async">
+        <!-- <a [routerLink]="['/canvas', canvas.id]">{{ canvas.name }}</a> -->
+        <h3>{{ canvas.id }}</h3>
+    </div>
+</main>
