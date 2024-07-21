@@ -60,7 +60,7 @@ export class LoginPageComponent implements OnInit {
 
                 console.log('Logged in:', this.user$);
 
-                // this.addUserProfile();
+                this.addUserProfile();
 
                 // this.router.navigate(['/profile']);
             })
@@ -90,7 +90,6 @@ export class LoginPageComponent implements OnInit {
 
         console.log('Adding user profile:', currentUser);
 
-        // const usersCollection = collection(this.firestore, 'users');
         const userDocRef = doc(this.usersCollection, currentUser.uid);
 
         await setDoc(userDocRef, {

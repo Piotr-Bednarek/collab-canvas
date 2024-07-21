@@ -23,15 +23,10 @@ class Drawing implements Drawing {
     moveStartX: number = 0;
     moveStartY: number = 0;
 
-    // scalingX: number = 1;
-    // scalingY: number = 1;
-
     offsetX: number = 0;
     offsetY: number = 0;
 
-    scalingThreshold: number = 0.1;
-
-    // scaledPoints: Point[] = [];
+    // scalingThreshold: number = 0.1;
 
     isScalingDrawing: boolean = false;
 
@@ -66,10 +61,6 @@ class Drawing implements Drawing {
     }
 
     updateBounds() {
-        // this.calculateScaledPoints();
-
-        // console.log(this.isFinished, this.originalBounds);
-
         if (this.isFinished && !this.originalBounds) {
             console.log('Setting original bounds');
             this.originalBounds = {
@@ -82,22 +73,6 @@ class Drawing implements Drawing {
         }
 
         if (!this.originalBounds) return;
-
-        // let temp = this.originalBounds.right - this.originalBounds.left;
-
-        // let temp2 = this.bounds.right - this.bounds.left;
-
-        // console.log('diff: ', temp, temp2);
-        // console.log('scale: ', temp2 / temp);
-
-        // if (this.isScalingDrawing) {
-        // this.scalingX = temp2 / temp;
-
-        // if (this.isFinished && this.bounds.top == 0) {
-        //     this.bounds = { ...this.originalBounds };
-        // }
-
-        //get the original bound and the new bounds calculate the scale between them and apply it to the points
 
         if (this.isScalingDrawing) {
             this.calculateScaledPoints();
@@ -334,7 +309,7 @@ class Drawing implements Drawing {
     }
 
     updateOriginalBounds() {
-        console.log('Updating original bounds');
+        // console.log('Updating original bounds');
         this.originalBounds = { ...this.bounds };
         this.originalPoints = [...this.points];
     }
@@ -382,12 +357,6 @@ class Drawing implements Drawing {
                     break;
             }
 
-            // console.log('Bounds:', this.bounds);
-
-            // console.log('scalex: ', scaleX);
-
-            // this.handleSelectedAnchorMouseMove(x, y);
-
             this.updateBounds();
 
             return;
@@ -417,107 +386,15 @@ class Drawing implements Drawing {
         this.updateAnchors();
     }
 
-    // handleSelectedAnchorMouseMove(x: number, y: number) {
-    //     if (!this.selectedAnchor) return;
-
-    //     const dx = x - this.moveStartX;
-    //     const dy = y - this.moveStartY;
-
-    //     const scaleX = dx / -(this.bounds.right - this.bounds.left);
-    //     console.log('ScaleX:', scaleX);
-    //     1;
-
-    // this.scalingX -= scaleX * 2;
-
-    // console.log('Selected anchor:', this.selectedAnchor);
-    // console.log('dx:', dx, 'dy:', dy);
-
-    // this.scaleDrawing(this.anchors.indexOf(this.selectedAnchor), dx, dy);
-
-    // console.log('Bounds:', this.bounds);
-
-    // console.log(this.scalingX, this.scalingY);
-    // }
-
-    // scaleDrawing(anchorIndex: number, dx: number, dy: number) {
-    //     // console.log('Scaling drawing with anchor: ', anchorIndex, dx, dy);
-
-    //     const currentWidth = this.bounds.right - this.bounds.left;
-    //     const currentHeight = this.bounds.bottom - this.bounds.top;
-
-    //     const newWidth = currentWidth + dx;
-    //     const newHeight = currentHeight + dy;
-
-    //     const scaleX = newWidth / currentWidth;
-    //     const scaleY = newHeight / currentHeight;
-
-    //     const centerX = this.bounds.left + (this.bounds.right - this.bounds.left) / 2;
-    //     const centerY = this.bounds.top + (this.bounds.bottom - this.bounds.top) / 2;
-
-    //     switch (anchorIndex) {
-    //         case 0:
-    //             console.log('Scaling top left');
-    //             for (const point of this.points) {
-    //                 point.x = (point.x - centerX) / scaleX + centerX;
-    //                 point.y = (point.y - centerY) / scaleY + centerY;
-    //             }
-
-    //             break;
-    //         case 1:
-    //             console.log('Scaling top right');
-    //             for (const point of this.points) {
-    //                 point.x = (point.x - centerX) * scaleX + centerX;
-    //                 point.y = (point.y - centerY) / scaleY + centerY;
-    //             }
-    //             break;
-    //         case 2:
-    //             console.log('Scaling bottom left');
-    //             for (const point of this.points) {
-    //                 point.x = (point.x - centerX) / scaleX + centerX;
-    //                 point.y = (point.y - centerY) * scaleY + centerY;
-    //             }
-    //             break;
-    //         case 3:
-    //             console.log('Scaling bottom right');
-    //             for (const point of this.points) {
-    //                 point.x = (point.x - centerX) * scaleX + centerX;
-    //                 point.y = (point.y - centerY) * scaleY + centerY;
-    //             }
-    //             break;
-    //         case 4:
-    //             console.log('Scaling top center');
-    //             for (const point of this.points) {
-    //                 point.y = (point.y - centerY) / scaleY + centerY;
-    //             }
-    //             break;
-    //         case 5:
-    //             console.log('Scaling bottom center');
-    //             for (const point of this.points) {
-    //                 point.y = (point.y - centerY) * scaleY + centerY;
-    //             }
-    //             break;
-    //         case 6:
-    //             console.log('Scaling left center');
-    //             for (const point of this.points) {
-    //                 point.x = (point.x - centerX) / scaleX + centerX;
-    //             }
-    //             break;
-    //         case 7:
-    //             console.log('Scaling right center');
-    //             for (const point of this.points) {
-    //                 point.x = (point.x - centerX) * scaleX + centerX;
-    //             }
-
-    //             break;
-    //     }
-
-    //     this.updateBounds();
-    //     this.updateAnchors();
-    // }
-
     moveStart(x: number, y: number) {
         this.moveStartX = x;
         this.moveStartY = y;
+    }
+
+    exportDrawing() {
+        return {
+            points: this.points,
+        };
     }
 }
 

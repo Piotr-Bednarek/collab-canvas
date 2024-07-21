@@ -11,6 +11,9 @@
 
     <div *ngFor="let canvas of canvases$ | async">
         <!-- <a [routerLink]="['/canvas', canvas.id]">{{ canvas.name }}</a> -->
-        <h3>{{ canvas.id }}</h3>
+        <div style="display: flex">
+            <h3>{{ canvas.id }}</h3>
+            <button (click)="handleRoutingToCanvas(canvas.id)">EDIT</button>
+        </div>
     </div>
 </main>

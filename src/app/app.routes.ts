@@ -14,7 +14,7 @@ export const routes: Routes = [
         component: LoginPageComponent,
     },
     {
-        path: 'canvas',
+        path: 'canvas/:id',
         component: CanvasPageComponent,
     },
     {

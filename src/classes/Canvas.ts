@@ -1,8 +1,16 @@
-import { ElementRef } from '@angular/core';
+import { ElementRef, Inject } from '@angular/core';
 import { Drawing } from './Drawing';
 import { Point } from './Point';
 
+import { EventEmitter, Injectable } from '@angular/core';
+import { DrawingFirebase } from '../app/drawing-firebase';
+
+@Injectable({
+    providedIn: 'root',
+})
 class Canvas {
+    public onDrawingComplete: EventEmitter<Drawing> = new EventEmitter<Drawing>();
+
     canvasElementRef: ElementRef | null = null;
     context: CanvasRenderingContext2D | null = null;
 
@@ -22,18 +30,23 @@ class Canvas {
 
     isMovingDrawing: boolean = false;
 
-    constructor(drawings: Drawing[] = [], canvasElementRef: ElementRef, context: CanvasRenderingContext2D) {
+    constructor(
+        @Inject(Drawing) drawings: Drawing[] = [],
+        canvasElementRef: ElementRef,
+        context: CanvasRenderingContext2D
+    ) {
         this.drawings = drawings;
         this.canvasElementRef = canvasElementRef;
         this.context = context;
     }
 
     addDrawing() {
-        // console.log(this.drawing);
         if (!this.drawing) return false;
 
-        this.drawing?.finish();
+        this.drawing.finish();
         this.drawings.push(this.drawing!);
+
+        this.onDrawingComplete.emit(this.drawing);
 
         this.drawing = null;
 
@@ -236,6 +249,12 @@ class Canvas {
     handleMouseUp() {
         this.isMovingDrawing = false;
         this.selectedDrawing?.handleMouseUp();
+    }
+
+    exportCanvas() {
+        for (const drawing of this.drawings) {
+            console.log(drawing.exportDrawing());
+        }
     }
 }
 

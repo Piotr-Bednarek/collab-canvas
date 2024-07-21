@@ -3,14 +3,21 @@
         TOOLS
         {{ cursorMode }}
         <button (click)="handleCursorModeSwitch()">SWITCH</button>
+        <button (click)="exportCanvas()">EXPORT</button>
     </div>
-    <canvas
-        [style.cursor]="cursorMode === 'draw' ? 'crosshair' : 'move'"
-        #canvas
-        (mousemove)="onMouseMove($event)"
-        (mousedown)="onMouseDown($event)"
-        (mouseup)="onMouseUp($event)"
-        (click)="onClick($event)"
-        class="canvas"
-    ></canvas>
+    <div #wrapper class="canvas-wrapper">
+        <canvas
+            #canvas
+            [style.cursor]="cursorMode === 'draw' ? 'crosshair' : 'move'"
+            (mousemove)="onMouseMove($event)"
+            (mousedown)="onMouseDown($event)"
+            (mouseup)="onMouseUp($event)"
+            (click)="onClick($event)"
+            class="canvas"
+        ></canvas>
+    </div>
+    <div>
+        INFO:
+        <p>logged in as: {{ user?.displayName }}, {{ user?.uid }}</p>
+    </div>
 </main>
