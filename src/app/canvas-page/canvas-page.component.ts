@@ -10,10 +10,11 @@ import {
 import { Auth, User, user } from '@angular/fire/auth';
 import { Firestore } from '@angular/fire/firestore';
 import { ActivatedRoute } from '@angular/router';
-import { addDoc, collection, getDocs } from 'firebase/firestore';
+import { updatePassword } from 'firebase/auth';
+import { addDoc, collection, doc, getDoc, getDocs, onSnapshot, setDoc, updateDoc } from 'firebase/firestore';
 import { Subscription } from 'rxjs';
 import { Canvas } from '../../classes/Canvas';
-import { DrawingFirebase } from '../drawing-firebase';
+import { FirebaseDrawing } from '../firebase-drawing';
 import { Drawing } from '../interfaces';
 
 @Component({
@@ -31,6 +32,8 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
     userSubscription: Subscription;
     user: User | null = null;
 
+    // drawingSubscription: Subscription;
+
     constructor(private route: ActivatedRoute) {
         this.userSubscription = this.user$.subscribe((aUser: User | null) => {
             if (aUser) {
@@ -41,6 +44,8 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
                 console.log('No user is currently logged in.');
             }
         });
+
+        // this.drawingSubscription = new Subscription();
     }
 
     @ViewChild('canvas') canvasElementRef: ElementRef<HTMLCanvasElement> | undefined;
@@ -64,27 +69,62 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
         this.canvasId = this.route.snapshot.paramMap.get('id');
         console.log('Canvas ID:', this.canvasId);
 
-        console.log('Adjusting canvas size');
+        if (!this.canvasId) {
+            console.log('CanvasId is not defined.');
+            return;
+        }
 
         this.adjustCanvasSize();
-
         this.canvas = new Canvas([], this.canvasElementRef!, this.context!);
 
         this.canvas.onDrawingComplete.subscribe((drawing: Drawing) => {
-            let temporaryDrawing: DrawingFirebase = {
+            let temporaryDrawing: FirebaseDrawing = {
+                id: drawing.id,
                 selectedBy: null,
                 points: drawing.points,
             };
+
             console.log('Drawing complete:', temporaryDrawing);
             this.addToFirebase(temporaryDrawing);
-            // console.log('Drawing complete:', drawing);
         });
+
+        this.canvas.onDrawingUpdate.subscribe((selectedDrawing: Drawing) => {
+            let temporaryDrawing: FirebaseDrawing = {
+                id: selectedDrawing.id,
+                selectedBy: null,
+                points: selectedDrawing.points,
+            };
+
+            console.log('Drawing updated:', temporaryDrawing);
+            this.updateFirebaseDrawing(temporaryDrawing);
+        });
+
+        // const canvasCollectionPath = `users/${this.user.uid}/canvases/${this.canvasId}/drawings`;
+        // const canvasCollection = collection(this.firestore, canvasCollectionPath);
+
+        // this.drawingSubscription = onSnapshot(canvasCollection, (snapshot) => {
+        //     snapshot.docChanges().forEach((change) => {
+        //         if (change.type === 'added') {
+        //             console.log('New drawing: ', change.doc.data());
+        //             // Handle the new drawing
+        //         }
+        //         if (change.type === 'modified') {
+        //             console.log('Modified drawing: ', change.doc.data());
+        //             // Handle the modified drawing
+        //         }
+        //         if (change.type === 'removed') {
+        //             console.log('Removed drawing: ', change.doc.data());
+        //             // Handle the removed drawing
+        //         }
+        //     });
+        // });
 
         this.canvas.draw();
     }
 
     ngOnDestroy(): void {
-        throw new Error('Method not implemented.');
+        this.userSubscription.unsubscribe();
+        // this.drawingSubscription.unsubscribe();
     }
 
     exportCanvas() {
@@ -223,11 +263,12 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
     }
 
     // TODO check if user is authorized to add to this canvas
-    async addToFirebase(drawing: DrawingFirebase) {
+    async addToFirebase(drawing: FirebaseDrawing) {
         if (!this.user) {
             console.log('Cannot add new drawing to canvas, no user logged in.');
             return;
         }
+
         console.log('Adding to Firebase...');
 
         const canvasCollection = collection(
@@ -240,7 +281,9 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
             points: drawing.points.map((point) => ({ x: point.x, y: point.y })),
         };
 
-        await addDoc(canvasCollection, convertedDrawing);
+        await setDoc(doc(canvasCollection, drawing.id), convertedDrawing);
+
+        // console.log('Drawing added to Firebase:', docRef.id);
     }
 
     async fetchFromFirebase() {
@@ -257,6 +300,49 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
         const querySnapshot = await getDocs(canvasCollection);
         querySnapshot.forEach((doc) => {
             console.log(doc.id, ' => ', doc.data());
+            this.canvas?.handleFirebaseDrawing(doc.data() as FirebaseDrawing);
         });
+
+        this.canvas?.draw();
+    }
+
+    async updateFirebaseDrawing(drawing: FirebaseDrawing) {
+        if (!this.user) {
+            console.log('Cannot update drawing in canvas, no user logged in.');
+            return;
+        }
+
+        // const canvasCollection = collection(
+        //     this.firestore,
+        //     `users/${this.user.uid}/canvases/${this.canvasId}/drawings`
+        // );
+
+        const docRef = doc(
+            this.firestore,
+            `users/${this.user.uid}/canvases/${this.canvasId}/drawings/${drawing.id}`
+        );
+        // /users/OSP0sx9VFeYmw5r1WjfpzKi3dJ92/canvases/eLLD8txw3SUJAAm8QaNs/drawings/140442c6-a519-4978-bb2d-bb0edd44464b
+
+        // const docRef = doc(canvasCollection, drawing.id);
+
+        // Check if the document exists before updating
+        const docSnap = await getDoc(docRef).catch((error) =>
+            console.error('Error getting document:', error)
+        );
+
+        // console.log('Document data:', docSnap.data());
+        // if (!docSnap.exists()) {
+        console.log('Document does not exist, cannot update.');
+        // Optionally, create the document here if it should exist
+        // await setDoc(docRef, convertedDrawing, { merge: true });
+        // return;
+        // }
+
+        const convertedDrawing = {
+            ...drawing,
+            points: drawing.points.map((point) => ({ x: point.x, y: point.y })),
+        };
+
+        await updateDoc(docRef, convertedDrawing);
     }
 }

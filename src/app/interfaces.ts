@@ -11,6 +11,7 @@ interface AnchorType {
 }
 
 interface Drawing {
+    id: string;
     points: PointType[];
     bounds: DrawingBounds;
     selected: boolean;

@@ -1,8 +1,11 @@
+import { v4 as uuidv4 } from 'uuid';
 import { DrawingBounds } from '../app/interfaces';
 import { Anchor } from './Anchor';
 import { Point } from './Point';
 
 class Drawing implements Drawing {
+    id: string;
+
     points: Point[];
     bounds: DrawingBounds;
     anchors: Anchor[];
@@ -34,6 +37,7 @@ class Drawing implements Drawing {
     translateY: number = 0;
 
     constructor(
+        id?: string,
         points: Point[] = [],
         bounds: DrawingBounds = { top: 0, left: 0, bottom: 0, right: 0 },
         selected: boolean = false
@@ -52,6 +56,12 @@ class Drawing implements Drawing {
             new Anchor(bounds.left, (bounds.top + bounds.bottom) / 2, this.anchorSize),
             new Anchor(bounds.right, (bounds.top + bounds.bottom) / 2, this.anchorSize),
         ];
+
+        if (id) {
+            this.id = id;
+        } else {
+            this.id = uuidv4();
+        }
     }
 
     addPoint(point: Point) {

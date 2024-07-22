@@ -1,6 +1,7 @@
 import { PointType } from './interfaces';
 
-export interface DrawingFirebase {
+export interface FirebaseDrawing {
+    id: string;
     selectedBy: string | null;
     points: PointType[];
 }

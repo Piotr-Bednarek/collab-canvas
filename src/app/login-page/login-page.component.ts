@@ -51,7 +51,7 @@ export class LoginPageComponent implements OnInit {
 
     login() {
         console.log('Logging in...');
-        signInWithRedirect(this.auth, new GoogleAuthProvider())
+        signInWithPopup(this.auth, new GoogleAuthProvider())
             .then((result) => {
                 // This gives you a Google Access Token. You can use it to access the Google API.
                 // const credential = GoogleAuthProvider.credentialFromResult(result);
