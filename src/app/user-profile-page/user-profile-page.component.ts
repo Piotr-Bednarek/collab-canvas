@@ -6,10 +6,14 @@ import { Router } from '@angular/router';
 import { addDoc, collection, CollectionReference, doc, getDocs, query } from 'firebase/firestore';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
+import { MatCardModule } from '@angular/material/card';
+import { MatTableModule } from '@angular/material/table';
+import { MatToolbar } from '@angular/material/toolbar';
+
 @Component({
     selector: 'app-user-profile-page',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, MatToolbar, MatCardModule],
     templateUrl: './user-profile-page.component.html',
     styleUrl: './user-profile-page.component.scss',
 })

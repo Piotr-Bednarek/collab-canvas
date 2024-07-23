@@ -1,11 +1,26 @@
 /* You can add global styles to this file, and also import other style files */
-html,
-body {
-    // height: 100vh;
-    // width: 100vw;
-    height: 100vh;
-    margin: 0;
-    font-family: Roboto, "Helvetica Neue", sans-serif;
+@use "@angular/material" as mat;
+
+@include mat.core();
+
+$theme: mat.define-theme(
+    (
+        color: (
+            theme-type: dark,
+            primary: mat.$blue-palette,
+        ),
+        typography: (
+            brand-family: "Roboto, sans-serif",
+            bold-weight: 900,
+        ),
+        density: (
+            scale: -1,
+        ),
+    )
+);
+
+html {
+    @include mat.all-component-themes($theme);
 }
 
 app-root {
@@ -27,4 +42,13 @@ app-root {
     border-radius: 0.5rem;
     box-shadow: 0 0 1rem rgba(0, 0, 0, 0.1);
     z-index: 1000;
+}
+
+html,
+body {
+    height: 100%;
+}
+body {
+    margin: 0;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
 }
