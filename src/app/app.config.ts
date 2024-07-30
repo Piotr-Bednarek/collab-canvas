@@ -5,7 +5,7 @@ import { provideRouter } from '@angular/router';
 
 import { getAuth, provideAuth } from '@angular/fire/auth';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { firebaseConfig } from '../enviroments/enviroment';
+import { firebaseConfig } from '../environments/environment';
 import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
