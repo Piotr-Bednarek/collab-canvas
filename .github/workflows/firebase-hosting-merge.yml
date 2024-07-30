@@ -1,5 +1,8 @@
-name: Deploy to Firebase Hosting on MERGE
-"on": pull_request
+name: Deploy to Firebase Hosting on merge
+"on":
+    push:
+        branches:
+            - master
 jobs:
     build_and_preview:
         if: "${{ github.event.pull_request.head.repo.full_name == github.repository }}"
