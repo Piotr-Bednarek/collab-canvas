@@ -7,7 +7,6 @@ import { addDoc, collection, CollectionReference, doc, getDocs, query } from 'fi
 import { BehaviorSubject, Subscription } from 'rxjs';
 
 import { MatCardModule } from '@angular/material/card';
-import { MatTableModule } from '@angular/material/table';
 import { MatToolbar } from '@angular/material/toolbar';
 
 @Component({
