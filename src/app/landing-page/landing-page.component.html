@@ -1,9 +1,9 @@
-<main>
-    <h1>Landing Page</h1>
-    <nav>
-        <a routerLink="/login" routerLinkActive="active" ariaCurrentWhenActive="page">Login</a>
-        <a routerLink="/canvas" routerLinkActive="active" ariaCurrentWhenActive="page">Canvas</a>
-    </nav>
+<main class="mat-body">
+    <div class="mat-typography mat-display-large title">Collab Canvas</div>
+    <span class="mat-title-medium">Your collaborative canvas for creative projects</span>
+    <a routerLink="/login" routerLinkActive="active" ariaCurrentWhenActive="page">
+        <button mat-flat-button matTooltip="Click me!">Try it out!</button>
+    </a>
 </main>
 
 <router-outlet></router-outlet>

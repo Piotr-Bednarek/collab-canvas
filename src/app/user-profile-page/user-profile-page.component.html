@@ -1,0 +1,45 @@
+<main>
+    <mat-toolbar>
+        <span class="title">Collab Canvas</span>
+        <span class="spacer"></span>
+        <div class="profile-wrapper">
+            <!-- {{ user?.displayName }} -->
+            <mat-card class="profile">
+                <mat-card-header>
+                    <mat-card-title-group>
+                        <mat-card-title> {{ user?.displayName }} </mat-card-title>
+                        <mat-card-subtitle> {{ user?.email }}</mat-card-subtitle>
+                        <img mat-card-avatar class src="{{ user?.photoURL }}" />
+                    </mat-card-title-group>
+                </mat-card-header>
+            </mat-card>
+        </div>
+        <!-- <div class="profile-info">
+            <div class="info-wrapper">
+                <div class="pill-wrapper">{{ user?.displayName }}</div>
+                <div class="pill-wrapper">{{ user?.email }}</div>
+            </div>
+            <div class="avatar-wrapper">
+                <img class="avatar" src="{{ user?.photoURL }}" />
+            </div>
+        </div> -->
+    </mat-toolbar>
+    <table mat-table>
+        <ng-container matColumnDef="id">
+            <th mat-header-cell *matHeaderCellDef>ID</th>
+        </ng-container>
+    </table>
+    <!-- <div class="project-container">
+        <div class="project-top-bar">
+            <div>Projects</div>
+            <button (click)="createNewCanvas()">+</button>
+        </div>
+
+        <div *ngFor="let canvas of canvases$ | async">
+            <div style="display: flex">
+                <h3>{{ canvas.id }}</h3>
+                <button (click)="handleRoutingToCanvas(canvas.id)">EDIT</button>
+            </div>
+        </div>
+    </div> -->
+</main>

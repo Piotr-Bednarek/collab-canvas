@@ -1,8 +1,17 @@
-import { ElementRef } from '@angular/core';
+import { ElementRef, Inject } from '@angular/core';
 import { Drawing } from './Drawing';
 import { Point } from './Point';
 
+import { EventEmitter, Injectable } from '@angular/core';
+import { FirebaseDrawing } from '../app/firebase-drawing';
+
+@Injectable({
+    providedIn: 'root',
+})
 class Canvas {
+    public onDrawingComplete: EventEmitter<Drawing> = new EventEmitter<Drawing>();
+    public onDrawingUpdate: EventEmitter<Drawing> = new EventEmitter<Drawing>();
+
     canvasElementRef: ElementRef | null = null;
     context: CanvasRenderingContext2D | null = null;
 
@@ -22,21 +31,25 @@ class Canvas {
 
     isMovingDrawing: boolean = false;
 
-    constructor(drawings: Drawing[] = [], canvasElementRef: ElementRef, context: CanvasRenderingContext2D) {
+    constructor(
+        @Inject(Drawing) drawings: Drawing[] = [],
+        canvasElementRef: ElementRef,
+        context: CanvasRenderingContext2D
+    ) {
         this.drawings = drawings;
         this.canvasElementRef = canvasElementRef;
         this.context = context;
     }
 
-    addDrawing() {
-        // console.log(this.drawing);
+    async addDrawing() {
         if (!this.drawing) return false;
 
-        this.drawing?.finish();
+        this.drawing.finish();
         this.drawings.push(this.drawing!);
 
-        this.drawing = null;
+        this.onDrawingComplete.emit(this.drawing);
 
+        this.drawing = null;
         return true;
     }
 
@@ -205,6 +218,8 @@ class Canvas {
         if (this.selectedDrawing) {
             this.isMovingDrawing = true;
             this.handleSelectedDrawingMouseMove(dx, dy);
+            // this.onDrawingUpdate.emit(this.selectedDrawing);
+
             // console.log('translate');
         } else if (!this.isMovingDrawing) {
             this.context.translate(dx, dy);
@@ -234,8 +249,32 @@ class Canvas {
     }
 
     handleMouseUp() {
+        if (!this.selectedDrawing) return;
+
         this.isMovingDrawing = false;
-        this.selectedDrawing?.handleMouseUp();
+        this.selectedDrawing.handleMouseUp();
+
+        this.onDrawingUpdate.emit(this.selectedDrawing);
+    }
+
+    exportCanvas() {
+        for (const drawing of this.drawings) {
+            console.log(drawing.exportDrawing());
+        }
+    }
+
+    handleFirebaseDrawing(drawing: FirebaseDrawing) {
+        console.log('Adding drawing from firebase');
+
+        let newDrawing = new Drawing(drawing.id);
+
+        for (const point of drawing.points) {
+            newDrawing.addPoint(new Point(point.x, point.y));
+        }
+
+        newDrawing.finish();
+
+        this.drawings.push(newDrawing);
     }
 }
 
