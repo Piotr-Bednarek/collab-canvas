@@ -37,4 +37,5 @@ jobs:
               with:
                   repoToken: "${{ secrets.GITHUB_TOKEN }}"
                   firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_COLLABCANVAS_D4338 }}"
+                  channelId: live
                   projectId: collabcanvas-d4338
