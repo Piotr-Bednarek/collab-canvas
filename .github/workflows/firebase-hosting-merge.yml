@@ -10,22 +10,6 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v2
 
-            - name: Print environment variables
-              env:
-                  FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
-                  FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
-                  FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
-                  FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
-                  FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
-                  FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
-              run: |
-                  echo "FIREBASE_API_KEY=${{ env.FIREBASE_API_KEY }}"
-                  echo "FIREBASE_AUTH_DOMAIN=${{ env.FIREBASE_AUTH_DOMAIN }}"
-                  echo "FIREBASE_PROJECT_ID=${{ env.FIREBASE_PROJECT_ID }}"
-                  echo "FIREBASE_STORAGE_BUCKET=${{ env.FIREBASE_STORAGE_BUCKET }}"
-                  echo "FIREBASE_MESSAGING_SENDER_ID=${{ env.FIREBASE_MESSAGING_SENDER_ID }}"
-                  echo "FIREBASE_APP_ID=${{ env.FIREBASE_APP_ID }}"
-
             - name: Generate environment files
               env:
                   FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
@@ -44,6 +28,9 @@ jobs:
                       messagingSenderId: '${{ env.FIREBASE_MESSAGING_SENDER_ID }}',
                       appId: '${{ env.FIREBASE_APP_ID }}'
                   };" > src/environments/environment.ts
+
+            - name: Print environment.ts file
+              run: cat src/environments/environment.ts
 
             - name: Install dependencies and build
               run: npm ci && npm run build
