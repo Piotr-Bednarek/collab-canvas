@@ -9,17 +9,6 @@ jobs:
         steps:
             - name: Checkout repository
               uses: actions/checkout@v2
-
-            - name: Generate environment files
-              env:
-                  FIREBASE_CONFIG: ${{ secrets.FIREBASE_CONFIG }}
-              run: |
-                  mkdir -p src/environments
-                  echo "${{ env.FIREBASE_CONFIG }}" > src/environments/environment.ts
-
-            - name: Print environment.ts file
-              run: cat src/environments/environment.ts
-
             - name: Install dependencies and build
               run: npm ci && npm run build
 
