@@ -13,12 +13,13 @@ import {
     query,
     where,
 } from 'firebase/firestore';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbar } from '@angular/material/toolbar';
+import { Canvases, CanvasItem } from '../../interfaces/canvases';
 // import { UserService } from '../../services/user.service';
 
 @Component({
@@ -35,8 +36,8 @@ export class UserProfilePageComponent implements OnDestroy {
     user$ = user(this.auth);
     userSubscription: Subscription;
 
-    private canvasesSource = new BehaviorSubject<any[]>([]);
-    canvases$ = this.canvasesSource.asObservable();
+    canvases$: Observable<Canvases>;
+    private canvasesSource = new BehaviorSubject<Canvases>({ loading: true, data: [] });
 
     canvasesSubscription: Subscription;
 
@@ -54,6 +55,7 @@ export class UserProfilePageComponent implements OnDestroy {
             }
         });
 
+        this.canvases$ = this.canvasesSource.asObservable();
         this.canvasesSubscription = this.canvases$.subscribe((canvases: any) => {
             console.log('Canvases:', canvases);
         });
@@ -96,18 +98,40 @@ export class UserProfilePageComponent implements OnDestroy {
 
         const querySnapshot = await getDocs(canvasesQuery);
 
-        this.canvasesSource.next([]);
+        this.canvasesSource.next({ loading: true, data: [] });
         querySnapshot.forEach((doc) => {
-            console.log('Canvas:', doc.id, doc.data());
-            const canvasData = { id: doc.id, ...doc.data() };
+            const canvasData: CanvasItem = {
+                id: doc.id,
+                title: doc.data()['title'],
+                ownerUid: doc.data()['ownerUid'],
+                created: this.getFormattedDate(doc.data()['created'].toDate()),
+            };
 
-            this.canvasesSource.next([...this.canvasesSource.value, canvasData]);
+            this.canvasesSource.next({
+                loading: true,
+                data: [...this.canvasesSource.value.data, canvasData],
+            });
+
+            console.log('Canvas:', canvasData);
+        });
+
+        this.canvasesSource.next({
+            loading: false,
+            data: this.canvasesSource.value.data,
         });
     }
 
     handleRoutingToCanvas(canvasId: string) {
         console.log('Routing to canvas:', canvasId);
         this.router.navigate(['/canvas', canvasId]);
+    }
+
+    getFormattedDate(date: Date) {
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+
+        return `${day}/${month}/${year}`;
     }
 
     async deleteCanvas(canvasId: string, event: MouseEvent) {

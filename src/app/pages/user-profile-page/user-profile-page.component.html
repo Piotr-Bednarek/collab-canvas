@@ -27,26 +27,29 @@
                 <mat-icon>add</mat-icon>
             </button>
         </div>
-        <div class="canvases-container">
-            <div
-                *ngFor="let canvas of canvases$ | async"
-                class="canvas-container"
-                (click)="handleRoutingToCanvas(canvas.id)"
-            >
-                <div class="canvas-details">
-                    <p>{{ canvas.title }} - {{ canvas.id }}</p>
-                    <p>Created: {{ canvas.created }}</p>
-                    <p>Last edited: {{ canvas.created }}</p>
-                </div>
-                <div class="canvas-controls">
-                    <button (click)="deleteCanvas(canvas.id, $event)" mat-mini-fab>
-                        <mat-icon>delete</mat-icon>
-                    </button>
-                    <button mat-mini-fab>
-                        <mat-icon>share</mat-icon>
-                    </button>
+        <div *ngIf="canvases$ | async as canvases">
+            <div class="canvases-container">
+                <div
+                    *ngFor="let canvas of canvases.data"
+                    class="canvas-container"
+                    (click)="handleRoutingToCanvas(canvas.id)"
+                >
+                    <div class="canvas-details">
+                        <p>{{ canvas.title }} - {{ canvas.id }}</p>
+                        <p>Created: {{ canvas.created }}</p>
+                        <p>Last edited: {{ canvas.created }}</p>
+                    </div>
+                    <div class="canvas-controls">
+                        <button (click)="deleteCanvas(canvas.id, $event)" mat-mini-fab>
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                        <button mat-mini-fab>
+                            <mat-icon>share</mat-icon>
+                        </button>
+                    </div>
                 </div>
             </div>
+            <h1 *ngIf="canvases.loading">Loading...</h1>
         </div>
     </div>
 </main>
