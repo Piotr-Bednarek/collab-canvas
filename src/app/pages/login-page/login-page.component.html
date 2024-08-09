@@ -1,5 +1,11 @@
 <main>
-    <h1>LOGIN PAGE</h1>
-    <button (click)="login()">login here</button>
-    <button (click)="logout()">logout here</button>
+    <h1>Login to try!</h1>
+    <button mat-fab extended (click)="login()">
+        <mat-icon
+            svgIcon="google-icon"
+            aria-hidden="false"
+            aria-label="Example thumbs up SVG icon"
+        ></mat-icon>
+        Sign in with Google
+    </button>
 </main>

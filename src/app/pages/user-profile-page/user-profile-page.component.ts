@@ -20,7 +20,6 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbar } from '@angular/material/toolbar';
 import { Canvases, CanvasItem } from '../../interfaces/canvases';
-// import { UserService } from '../../services/user.service';
 
 @Component({
     selector: 'app-user-profile-page',
@@ -35,13 +34,11 @@ export class UserProfilePageComponent implements OnDestroy {
 
     user$ = user(this.auth);
     userSubscription: Subscription;
+    user: User | null = null;
 
     canvases$: Observable<Canvases>;
-    private canvasesSource = new BehaviorSubject<Canvases>({ loading: true, data: [] });
-
     canvasesSubscription: Subscription;
-
-    user: User | null = null;
+    private canvasesSource = new BehaviorSubject<Canvases>({ loading: true, data: [] });
 
     constructor(private router: Router) {
         this.userSubscription = this.user$.subscribe((aUser: User | null) => {
@@ -56,9 +53,7 @@ export class UserProfilePageComponent implements OnDestroy {
         });
 
         this.canvases$ = this.canvasesSource.asObservable();
-        this.canvasesSubscription = this.canvases$.subscribe((canvases: any) => {
-            console.log('Canvases:', canvases);
-        });
+        this.canvasesSubscription = this.canvases$.subscribe();
     }
 
     ngOnDestroy(): void {
@@ -71,10 +66,6 @@ export class UserProfilePageComponent implements OnDestroy {
             console.log('Cannot create a new canvas, no user logged in.');
             return;
         }
-        console.log('Creating a new canvas...');
-
-        // this.userService.createNewCanvas();
-
         const canvasesCollection = collection(this.firestore, 'canvases');
 
         const newCanvasData = {
@@ -112,7 +103,7 @@ export class UserProfilePageComponent implements OnDestroy {
                 data: [...this.canvasesSource.value.data, canvasData],
             });
 
-            console.log('Canvas:', canvasData);
+            // console.log('Canvas:', canvasData);
         });
 
         this.canvasesSource.next({
@@ -149,5 +140,11 @@ export class UserProfilePageComponent implements OnDestroy {
         await deleteDoc(canvasRef);
 
         this.fetchUserCanvases();
+    }
+
+    async signOut() {
+        await this.auth.signOut();
+
+        this.router.navigate(['/login']);
     }
 }
