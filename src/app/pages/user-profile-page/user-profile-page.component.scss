@@ -2,9 +2,11 @@
 @use "@angular/material" as mat;
 
 main {
-    background-color: red;
+    // background-color: red;
     height: 100vh;
-    width: 100vw;
+    // width: 100vw;
+    display: flex;
+    flex-direction: column;
 }
 
 .spacer {
@@ -13,6 +15,10 @@ main {
 
 mat-toolbar {
     height: 5rem;
+}
+
+mat-card-header {
+    padding: 0.5rem 0.5rem 0;
 }
 
 @mixin color($theme) {
@@ -72,11 +78,73 @@ mat-toolbar {
 }
 
 .project-container {
-    background-color: yellow;
+    // background-color: yellow;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
 }
 
 .project-top-bar {
     display: flex;
     flex-direction: row;
+    justify-content: left;
+    align-items: center;
+    padding: 1rem;
+    gap: 1rem;
+    background-color: white;
+    // margin-top: 0.5rem;
+    font-size: 1.4rem;
+    border-top: 1px solid gray;
+    border-bottom: 1px solid gray;
+}
+
+.canvas-thumbnail {
+    width: 5rem;
+    height: 5rem;
+    border-radius: 1rem;
+    background-color: blue;
+}
+
+.canvas-container {
+    display: flex;
     justify-content: space-between;
+    // gap: 0.5rem;
+    background-color: lightgray;
+    border: 1px solid gray;
+    border-radius: 1rem;
+    padding: 1rem;
+    cursor: pointer;
+}
+
+.canvas-container:hover {
+    background-color: rgb(184, 184, 184);
+}
+
+.canvas-container:active {
+    background-color: rgb(141, 141, 141);
+}
+
+.canvas-details {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.home-link {
+    color: black;
+    text-decoration: none;
+}
+
+.canvases-container {
+    display: flex;
+    flex-direction: column;
+
+    gap: 1rem;
+    padding: 1rem 1rem;
+}
+
+.canvas-controls {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
 }

@@ -43,6 +43,8 @@ export class LoginPageComponent implements OnInit {
         this.auth.onAuthStateChanged((user) => {
             if (user) {
                 this.user$ = user;
+                console.log('User:', this.user$);
+                this.redirectToProfile();
             } else {
                 this.user$ = null;
             }
@@ -100,12 +102,16 @@ export class LoginPageComponent implements OnInit {
         })
             .then(() => {
                 console.log('User profile added.');
-                this.router.navigate(['/profile']);
+                this.redirectToProfile();
             })
             .catch((error) => {
                 console.error('Error adding user profile:', error);
             });
 
         // addDoc(this.usersCollection, { uid: this.user$.uid });
+    }
+
+    redirectToProfile() {
+        this.router.navigate(['/profile']);
     }
 }

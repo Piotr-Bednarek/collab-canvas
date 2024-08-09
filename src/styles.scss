@@ -22,10 +22,10 @@ $collab-canvas-theme: mat.define-theme(
             scale: 0,
         ),
         typography: (
-            plain-family: Roboto,
-            brand-family: "Playwrite AR",
+            plain-family: "Roboto Mono",
+            brand-family: "Roboto Mono",
             bold-weight: 900,
-            regular-weight: 400,
+            regular-weight: 600,
         ),
     )
 );

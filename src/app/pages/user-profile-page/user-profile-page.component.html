@@ -1,0 +1,54 @@
+<main>
+    <mat-toolbar>
+        <a class="home-link" routerLink="/" routerLinkActive="active" ariaCurrentWhenActive="page">
+            <span class="title"> Collab Canvas </span>
+        </a>
+        <span class="spacer"></span>
+        <div class="profile-wrapper">
+            <!-- {{ user?.displayName }} -->
+            <mat-card class="profile" appearance="outlined">
+                <mat-card-header>
+                    <mat-card-title-group>
+                        <mat-card-title class="mat-title-large">
+                            {{ user?.displayName }}
+                        </mat-card-title>
+                        <mat-card-subtitle> {{ user?.email }}</mat-card-subtitle>
+                        <img mat-card-avatar class src="{{ user?.photoURL }}" />
+                    </mat-card-title-group>
+                </mat-card-header>
+            </mat-card>
+        </div>
+    </mat-toolbar>
+    <div class="project-container">
+        <div class="project-top-bar">
+            <div>Projects</div>
+            <!-- <div>VIEW MODE O/X</div> -->
+            <button (click)="createNewCanvas()" mat-mini-fab>
+                <mat-icon>add</mat-icon>
+            </button>
+        </div>
+        <div class="canvases-container">
+            <div
+                *ngFor="let canvas of canvases$ | async"
+                class="canvas-container"
+                (click)="handleRoutingToCanvas(canvas.id)"
+            >
+                <div class="canvas-details">
+                    <p>{{ canvas.title }} - {{ canvas.id }}</p>
+                    <p>Created: {{ canvas.created }}</p>
+                    <p>Last edited: {{ canvas.created }}</p>
+                </div>
+                <div class="canvas-controls">
+                    <button (click)="deleteCanvas(canvas.id, $event)" mat-mini-fab>
+                        <mat-icon>delete</mat-icon>
+                    </button>
+                    <button mat-mini-fab>
+                        <mat-icon>share</mat-icon>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<router-outlet></router-outlet>

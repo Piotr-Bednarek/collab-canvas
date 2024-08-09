@@ -1,5 +1,5 @@
 export const environment = {
-    production: true,
+    production: false,
     firebaseConfig: {
         apiKey: 'AIzaSyCepsCmmncQVu60ofV6vPvmRXYYML3FNV8',
         authDomain: 'collabcanvas-d4338.firebaseapp.com',

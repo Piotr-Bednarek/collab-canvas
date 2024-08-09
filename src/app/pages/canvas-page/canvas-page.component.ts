@@ -13,9 +13,9 @@ import { ActivatedRoute } from '@angular/router';
 import { updatePassword } from 'firebase/auth';
 import { addDoc, collection, doc, getDoc, getDocs, onSnapshot, setDoc, updateDoc } from 'firebase/firestore';
 import { Subscription } from 'rxjs';
-import { Canvas } from '../../classes/Canvas';
-import { FirebaseDrawing } from '../firebase-drawing';
-import { Drawing } from '../interfaces';
+import { Canvas } from '../../../classes/Canvas';
+import { FirebaseDrawing } from '../../firebase-drawing';
+import { Drawing } from '../../interfaces';
 
 @Component({
     selector: 'app-canvas-page',
@@ -125,6 +125,10 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
     ngOnDestroy(): void {
         this.userSubscription.unsubscribe();
         // this.drawingSubscription.unsubscribe();
+    }
+
+    fetchCanvas() {
+        console.log('Fetching canvas...');
     }
 
     exportCanvas() {
@@ -271,10 +275,7 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
 
         console.log('Adding to Firebase...');
 
-        const canvasCollection = collection(
-            this.firestore,
-            `users/${this.user.uid}/canvases/${this.canvasId}/drawings`
-        );
+        const canvasCollection = collection(this.firestore, `canvases/${this.canvasId}/drawings`);
 
         const convertedDrawing = {
             ...drawing,
@@ -292,10 +293,7 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
             return;
         }
 
-        const canvasCollection = collection(
-            this.firestore,
-            `users/${this.user.uid}/canvases/${this.canvasId}/drawings`
-        );
+        const canvasCollection = collection(this.firestore, `/canvases/${this.canvasId}/drawings`);
 
         const querySnapshot = await getDocs(canvasCollection);
         querySnapshot.forEach((doc) => {
@@ -317,10 +315,7 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
         //     `users/${this.user.uid}/canvases/${this.canvasId}/drawings`
         // );
 
-        const docRef = doc(
-            this.firestore,
-            `users/${this.user.uid}/canvases/${this.canvasId}/drawings/${drawing.id}`
-        );
+        const docRef = doc(this.firestore, `/canvases/${this.canvasId}/drawings/${drawing.id}`);
         // /users/OSP0sx9VFeYmw5r1WjfpzKi3dJ92/canvases/eLLD8txw3SUJAAm8QaNs/drawings/140442c6-a519-4978-bb2d-bb0edd44464b
 
         // const docRef = doc(canvasCollection, drawing.id);
