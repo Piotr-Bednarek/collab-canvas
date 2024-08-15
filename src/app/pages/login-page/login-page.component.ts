@@ -31,8 +31,6 @@ export class LoginPageComponent implements OnInit {
     user$: User | null = null;
 
     constructor(private router: Router, iconRegistry: MatIconRegistry, sanitizer: DomSanitizer) {
-        // console.log('User:', this.user$);
-
         iconRegistry.addSvgIconLiteral('google-icon', sanitizer.bypassSecurityTrustHtml(GOOGLE_ICON));
     }
 

@@ -1,14 +1,28 @@
 <main>
-    <div class="tools">
-        TOOLS
-        {{ cursorMode }}
-        <button (click)="handleCursorModeSwitch()">SWITCH</button>
-        <button (click)="exportCanvas()">EXPORT</button>
+    <div class="top-bar">
+        <div class="left-container">
+            <button mat-fab extended><mat-icon>arrow_back</mat-icon>Return to profile</button>
+        </div>
+        Selected tool: {{ selectedTool }}
+        <!-- <button (click)="handleCursorModeSwitch()">SWITCH</button> -->
+        <div class="tools">
+            <button (click)="selectTool('move')" mat-fab extended><mat-icon>open_with</mat-icon>Move</button>
+            <button (click)="selectTool('draw')" mat-fab extended><mat-icon>draw</mat-icon>Pencil</button>
+
+            <button (click)="selectTool('rectangle')" mat-fab><mat-icon>rectangle</mat-icon></button>
+            <button (click)="selectTool('circle')" mat-fab><mat-icon>circle</mat-icon></button>
+
+            <button (click)="selectTool('select')" mat-fab><mat-icon>select</mat-icon></button>
+            <button (click)="selectTool('text_field')" mat-fab><mat-icon>text_fields</mat-icon></button>
+            <button mat-fab><mat-icon>image</mat-icon></button>
+
+            <button mat-fab extended><mat-icon>download</mat-icon>Save to computer</button>
+        </div>
     </div>
     <div #wrapper class="canvas-wrapper">
         <canvas
             #canvas
-            [style.cursor]="cursorMode === 'draw' ? 'crosshair' : 'move'"
+            [style.cursor]="selectedTool === 'draw' ? 'crosshair' : 'move'"
             (mousemove)="onMouseMove($event)"
             (mousedown)="onMouseDown($event)"
             (mouseup)="onMouseUp($event)"

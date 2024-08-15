@@ -11,6 +11,7 @@ import { FirebaseDrawing } from '../app/firebase-drawing';
 class Canvas {
     public onDrawingComplete: EventEmitter<Drawing> = new EventEmitter<Drawing>();
     public onDrawingUpdate: EventEmitter<Drawing> = new EventEmitter<Drawing>();
+    public onClearSelect: EventEmitter<Drawing> = new EventEmitter<Drawing>();
 
     canvasElementRef: ElementRef | null = null;
     context: CanvasRenderingContext2D | null = null;
@@ -63,11 +64,11 @@ class Canvas {
         this.drawUnfinished();
     }
 
-    logDrawings() {
-        for (const drawing of this.drawings) {
-            drawing.logDrawing();
-        }
-    }
+    // logDrawings() {
+    //     for (const drawing of this.drawings) {
+    //         drawing.logDrawing();
+    //     }
+    // }
 
     draw() {
         this.clear();
@@ -133,10 +134,13 @@ class Canvas {
 
         if (this.selectedDrawing === this.hoveredDrawing) return;
 
+        this.onClearSelect.emit(this.selectedDrawing);
+
         // if (!this.selectedDrawing.isHovered) {
         this.selectedDrawing.isSelected = false;
         this.selectedDrawing.clearSelectedAnchor();
         this.selectedDrawing = null;
+
         // }
 
         // this.selectedDrawing.isSelected = false;
@@ -275,6 +279,22 @@ class Canvas {
         newDrawing.finish();
 
         this.drawings.push(newDrawing);
+    }
+
+    updateDrawing(drawing: FirebaseDrawing) {
+        console.log('id: ', drawing.id);
+
+        const drawingIndex = this.drawings.findIndex((d) => d.id === drawing.id);
+
+        if (drawingIndex === -1) {
+            console.error('Drawing not found');
+            return;
+        }
+
+        console.log('Drawing found');
+        this.drawings[drawingIndex].updateDrawingPoints(drawing.points);
+
+        this.draw();
     }
 }
 

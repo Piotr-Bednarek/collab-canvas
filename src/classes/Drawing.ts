@@ -138,9 +138,9 @@ class Drawing implements Drawing {
         this.anchors[7].y = (this.bounds.top + this.bounds.bottom) / 2;
     }
 
-    logDrawing() {
-        console.log(this.points.length, this.bounds, this.isHovered);
-    }
+    // logDrawing() {
+    //     console.log(this.points.length, this.bounds, this.isHovered);
+    // }
 
     calculateScaledPoints() {
         if (!this.originalBounds || !this.bounds) return;
@@ -304,6 +304,7 @@ class Drawing implements Drawing {
         this.clearSelectedAnchor();
 
         this.updateOriginalBounds();
+        this.updateBounds();
     }
 
     clearSelectedAnchor() {
@@ -380,7 +381,7 @@ class Drawing implements Drawing {
         }
 
         this.updateBoundsAfterMove();
-        // this.updateBounds();
+        this.updateBounds();
     }
 
     updateBoundsAfterMove() {
@@ -394,6 +395,11 @@ class Drawing implements Drawing {
         this.updateOriginalBounds();
 
         this.updateAnchors();
+    }
+
+    updateDrawingPoints(points: Point[]) {
+        this.points = points;
+        this.updateBounds();
     }
 
     moveStart(x: number, y: number) {

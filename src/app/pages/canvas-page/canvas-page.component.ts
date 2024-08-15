@@ -1,3 +1,4 @@
+import { coerceStringArray } from '@angular/cdk/coercion';
 import {
     AfterViewInit,
     Component,
@@ -10,17 +11,30 @@ import {
 import { Auth, User, user } from '@angular/fire/auth';
 import { Firestore } from '@angular/fire/firestore';
 import { ActivatedRoute } from '@angular/router';
-import { updatePassword } from 'firebase/auth';
-import { addDoc, collection, doc, getDoc, getDocs, onSnapshot, setDoc, updateDoc } from 'firebase/firestore';
+import {
+    addDoc,
+    collection,
+    doc,
+    getDoc,
+    getDocs,
+    onSnapshot,
+    QuerySnapshot,
+    setDoc,
+    Unsubscribe,
+    updateDoc,
+} from 'firebase/firestore';
 import { Subscription } from 'rxjs';
 import { Canvas } from '../../../classes/Canvas';
 import { FirebaseDrawing } from '../../firebase-drawing';
 import { Drawing } from '../../interfaces';
 
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+
 @Component({
     selector: 'app-canvas-page',
     standalone: true,
-    imports: [],
+    imports: [MatIconModule, MatButtonModule],
     templateUrl: './canvas-page.component.html',
     styleUrl: './canvas-page.component.scss',
 })
@@ -32,20 +46,24 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
     userSubscription: Subscription;
     user: User | null = null;
 
-    // drawingSubscription: Subscription;
+    drawingSubscription: Unsubscribe;
 
     constructor(private route: ActivatedRoute) {
         this.userSubscription = this.user$.subscribe((aUser: User | null) => {
             if (aUser) {
                 this.user = aUser;
-                console.log('User:', aUser);
-                this.fetchFromFirebase();
+                // console.log('User:', aUser);
+                // this.fetchFromFirebase();
             } else {
                 console.log('No user is currently logged in.');
             }
         });
 
-        // this.drawingSubscription = new Subscription();
+        this.drawingSubscription = () => {};
+
+        // const canvasCollection = collection(this.firestore, 'canvases', this.canvasId);
+
+        // console.log('Canvas collection:', canvasCollection);
     }
 
     @ViewChild('canvas') canvasElementRef: ElementRef<HTMLCanvasElement> | undefined;
@@ -63,11 +81,12 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
     private isDrawing: boolean = false;
     private isMoving: boolean = false;
 
-    cursorMode = 'move'; // 'draw' or 'move'
+    selectedTool = 'move'; // 'draw' or 'move'
+
+    lastAddedDrawingId: string | null = null;
 
     ngAfterViewInit(): void {
         this.canvasId = this.route.snapshot.paramMap.get('id');
-        console.log('Canvas ID:', this.canvasId);
 
         if (!this.canvasId) {
             console.log('CanvasId is not defined.');
@@ -84,6 +103,8 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
                 points: drawing.points,
             };
 
+            this.lastAddedDrawingId = temporaryDrawing.id;
+
             console.log('Drawing complete:', temporaryDrawing);
             this.addToFirebase(temporaryDrawing);
         });
@@ -91,7 +112,7 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
         this.canvas.onDrawingUpdate.subscribe((selectedDrawing: Drawing) => {
             let temporaryDrawing: FirebaseDrawing = {
                 id: selectedDrawing.id,
-                selectedBy: null,
+                selectedBy: this.user?.uid || null,
                 points: selectedDrawing.points,
             };
 
@@ -99,37 +120,58 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
             this.updateFirebaseDrawing(temporaryDrawing);
         });
 
-        // const canvasCollectionPath = `users/${this.user.uid}/canvases/${this.canvasId}/drawings`;
-        // const canvasCollection = collection(this.firestore, canvasCollectionPath);
+        this.canvas.onClearSelect.subscribe((selectedDrawing: Drawing) => {
+            let temporaryDrawing: FirebaseDrawing = {
+                id: selectedDrawing.id,
+                selectedBy: null,
+                points: selectedDrawing.points,
+            };
 
-        // this.drawingSubscription = onSnapshot(canvasCollection, (snapshot) => {
-        //     snapshot.docChanges().forEach((change) => {
-        //         if (change.type === 'added') {
-        //             console.log('New drawing: ', change.doc.data());
-        //             // Handle the new drawing
-        //         }
-        //         if (change.type === 'modified') {
-        //             console.log('Modified drawing: ', change.doc.data());
-        //             // Handle the modified drawing
-        //         }
-        //         if (change.type === 'removed') {
-        //             console.log('Removed drawing: ', change.doc.data());
-        //             // Handle the removed drawing
-        //         }
-        //     });
-        // });
+            console.log('SelectedBy cleared:', temporaryDrawing);
+            this.updateFirebaseDrawing(temporaryDrawing);
+        });
 
-        this.canvas.draw();
+        this.drawingSubscription = onSnapshot(
+            collection(this.firestore, `canvases/${this.canvasId}/drawings`),
+            (snapshot) => {
+                snapshot.docChanges().forEach((change) => {
+                    // console.log('Change:', change);
+                    if (change.type === 'added') {
+                        console.log('New drawing: ', change.doc.data());
+                        this.fetchDrawingFromFirebase(change.doc.id);
+                    }
+                    if (change.type === 'modified') {
+                        console.log('Modified drawing: ', change.doc.data());
+
+                        this.handleDrawingUpdate(change.doc.data() as FirebaseDrawing);
+                        // Handle the modified drawing
+                    }
+                    // if (change.type === 'removed') {
+                    //     console.log('Removed drawing: ', change.doc.data());
+                    //     // Handle the removed drawing
+                    // }
+                });
+            },
+            (error) => {
+                console.error('Error in snapshot listener:', error);
+            }
+        );
     }
 
     ngOnDestroy(): void {
         this.userSubscription.unsubscribe();
-        // this.drawingSubscription.unsubscribe();
+        this.drawingSubscription();
     }
 
-    fetchCanvas() {
-        console.log('Fetching canvas...');
+    handleDrawingUpdate(drawing: FirebaseDrawing) {
+        console.log('Updating drawing...');
+
+        this.canvas?.updateDrawing(drawing);
     }
+
+    // fetchCanvas() {
+    //     console.log('Fetching canvas...');
+    // }
 
     exportCanvas() {
         console.log('Exporting canvas...');
@@ -151,7 +193,7 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
         if (!$event) return;
 
         this.handleMouseHoverCheck($event);
-        if (this.cursorMode === 'move') {
+        if (this.selectedTool === 'move') {
             if (!this.isMoving) return;
 
             this.canvas?.handleMouseMove($event.offsetX, $event.offsetY);
@@ -167,40 +209,38 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
     onMouseDown($event: MouseEvent) {
         if (!this.canvas) return;
 
-        if (this.cursorMode === 'move') {
+        if (this.selectedTool === 'move') {
             this.canvas.moveStart($event.offsetX, $event.offsetY);
 
             this.isMoving = true;
             this.handleMouseHoverCheck($event);
             this.handleMouseSelect();
-        } else if (this.cursorMode === 'draw') {
+        } else if (this.selectedTool === 'draw') {
             this.isDrawing = true;
-            this.canvas?.handleDrawingSelect();
+            this.canvas.handleDrawingSelect();
         }
     }
 
     onMouseUp($event: MouseEvent) {
-        if (this.cursorMode === 'move') {
+        if (this.selectedTool === 'move') {
             this.isMoving = false;
             this.canvas?.handleMouseUp();
-        } else if (this.cursorMode === 'draw') {
+        } else if (this.selectedTool === 'draw') {
             if (this.canvas?.addDrawing()) {
                 console.log('Drawing added');
-                this.isDrawing = false;
-            } else {
-                this.isDrawing = false;
             }
+            this.isDrawing = false;
         }
     }
 
     onClick($event: MouseEvent) {
-        if (this.cursorMode === 'draw') return;
+        if (this.selectedTool === 'draw') return;
 
         this.handleMouseSelect();
     }
 
     handleCursorModeSwitch() {
-        this.cursorMode = this.cursorMode === 'move' ? 'draw' : 'move';
+        this.selectedTool = this.selectedTool === 'move' ? 'draw' : 'move';
     }
 
     handleMouseHoverCheck($event: MouseEvent) {
@@ -218,7 +258,7 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
         this.canvas.handleDrawingSelect();
         this.canvas.handleAnchorSelect();
 
-        this.canvas?.draw();
+        this.canvas.draw();
     }
 
     adjustCanvasSize() {
@@ -239,31 +279,15 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
             context?.scale(dpr, dpr);
             this.context = context;
 
-            console.log('Canvas adjusted to wrapper size: ', rect.width, rect.height);
+            // console.log('Canvas adjusted to wrapper size: ', rect.width, rect.height);
         }
 
         this.canvas?.draw();
     }
 
-    @HostListener('window:keydown.1', ['$event'])
-    changeCursorToDraw() {
-        this.cursorMode = 'draw';
-    }
-
-    @HostListener('window:keydown.2', ['$event'])
-    changeCursorToMove() {
-        this.cursorMode = 'move';
-    }
-
-    @HostListener('contextmenu', ['$event'])
-    onRightClick($event: MouseEvent) {
-        $event.preventDefault();
-    }
-
-    @HostListener('window:resize', ['$event'])
-    onResize($event: Event) {
-        console.log('Resizing');
-        this.adjustCanvasSize();
+    selectTool(tool: string) {
+        console.log('Selected tool:', tool);
+        this.selectedTool = tool;
     }
 
     // TODO check if user is authorized to add to this canvas
@@ -297,9 +321,31 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
 
         const querySnapshot = await getDocs(canvasCollection);
         querySnapshot.forEach((doc) => {
-            console.log(doc.id, ' => ', doc.data());
+            // console.log(doc.id, ' => ', doc.data());
             this.canvas?.handleFirebaseDrawing(doc.data() as FirebaseDrawing);
         });
+
+        this.canvas?.draw();
+    }
+
+    async fetchDrawingFromFirebase(drawingId: string) {
+        if (!this.user) {
+            console.log('Cannot fetch drawing from canvas, no user logged in.');
+            return;
+        }
+
+        if (drawingId === this.lastAddedDrawingId) return;
+
+        const canvasCollection = collection(this.firestore, `/canvases/${this.canvasId}/drawings`);
+
+        await getDoc(doc(canvasCollection, drawingId)).then((doc) => {
+            this.canvas?.handleFirebaseDrawing(doc.data() as FirebaseDrawing);
+        });
+
+        // const querySnapshot = await getDocs(canvasCollection);
+        // querySnapshot.forEach((doc) => {
+        //     if (doc.id !== drawingId) return;
+        // });
 
         this.canvas?.draw();
     }
@@ -316,7 +362,6 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
         // );
 
         const docRef = doc(this.firestore, `/canvases/${this.canvasId}/drawings/${drawing.id}`);
-        // /users/OSP0sx9VFeYmw5r1WjfpzKi3dJ92/canvases/eLLD8txw3SUJAAm8QaNs/drawings/140442c6-a519-4978-bb2d-bb0edd44464b
 
         // const docRef = doc(canvasCollection, drawing.id);
 
@@ -327,17 +372,39 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
 
         // console.log('Document data:', docSnap.data());
         // if (!docSnap.exists()) {
-        console.log('Document does not exist, cannot update.');
+        // console.log('Document does not exist, cannot update.');
         // Optionally, create the document here if it should exist
         // await setDoc(docRef, convertedDrawing, { merge: true });
         // return;
         // }
 
         const convertedDrawing = {
-            ...drawing,
+            id: drawing.id,
+            selectedBy: drawing.selectedBy,
             points: drawing.points.map((point) => ({ x: point.x, y: point.y })),
         };
 
         await updateDoc(docRef, convertedDrawing);
+    }
+
+    @HostListener('window:keydown.1', ['$event'])
+    changeCursorToDraw() {
+        this.selectedTool = 'draw';
+    }
+
+    @HostListener('window:keydown.2', ['$event'])
+    changeCursorToMove() {
+        this.selectedTool = 'move';
+    }
+
+    @HostListener('contextmenu', ['$event'])
+    onRightClick($event: MouseEvent) {
+        $event.preventDefault();
+    }
+
+    @HostListener('window:resize', ['$event'])
+    onResize($event: Event) {
+        console.log('Resizing');
+        this.adjustCanvasSize();
     }
 }
