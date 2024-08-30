@@ -1,0 +1,50 @@
+<div class="tools">
+    <div *ngIf="selectedTool != 'move'; else disabledMoveTemplate">
+        <button (click)="selectTool('move')" mat-fab extended><mat-icon>open_with</mat-icon>Move</button>
+    </div>
+    <ng-template #disabledMoveTemplate>
+        <button (click)="selectTool('move')" mat-fab extended disabled>
+            <mat-icon>open_with</mat-icon>Move
+        </button>
+    </ng-template>
+
+    <div *ngIf="selectedTool != 'draw'; else disabledDrawTemplate">
+        <button (click)="selectTool('draw')" mat-fab extended><mat-icon>draw</mat-icon>Pencil</button>
+    </div>
+    <ng-template #disabledDrawTemplate>
+        <button (click)="selectTool('draw')" mat-fab extended disabled>
+            <mat-icon>draw</mat-icon>Pencil
+        </button>
+    </ng-template>
+
+    <div *ngIf="selectedTool != 'rectangle'; else disabledRectangleTemplate">
+        <button (click)="selectTool('rectangle')" mat-fab><mat-icon>rectangle</mat-icon></button>
+    </div>
+    <ng-template #disabledRectangleTemplate>
+        <button (click)="selectTool('rectangle')" mat-fab disabled><mat-icon>rectangle</mat-icon></button>
+    </ng-template>
+
+    <div *ngIf="selectedTool != 'circle'; else disabledCircleTemplate">
+        <button (click)="selectTool('circle')" mat-fab><mat-icon>circle</mat-icon></button>
+    </div>
+    <ng-template #disabledCircleTemplate>
+        <button (click)="selectTool('circle')" mat-fab disabled><mat-icon>circle</mat-icon></button>
+    </ng-template>
+
+    <div *ngIf="selectedTool != 'select'; else disabledSelectTemplate">
+        <button (click)="selectTool('select')" mat-fab><mat-icon>select</mat-icon></button>
+    </div>
+    <ng-template #disabledSelectTemplate>
+        <button (click)="selectTool('select')" mat-fab disabled><mat-icon>select</mat-icon></button>
+    </ng-template>
+
+    <div *ngIf="selectedTool != 'text_field'; else disabledTextFieldTemplate">
+        <button (click)="selectTool('text_field')" mat-fab><mat-icon>text_fields</mat-icon></button>
+    </div>
+    <ng-template #disabledTextFieldTemplate>
+        <button (click)="selectTool('text_field')" mat-fab disabled><mat-icon>text_fields</mat-icon></button>
+    </ng-template>
+
+    <button mat-fab><mat-icon>image</mat-icon></button>
+    <button mat-fab extended><mat-icon>download</mat-icon>Save to computer</button>
+</div>

@@ -1,5 +1,4 @@
 <main>
-    <h1>Login to try!</h1>
     <button mat-fab extended (click)="login()">
         <mat-icon
             svgIcon="google-icon"
@@ -7,5 +6,10 @@
             aria-label="Example thumbs up SVG icon"
         ></mat-icon>
         Sign in with Google
+    </button>
+    <h3 style="margin-top: 2rem; margin-bottom: 2rem">or</h3>
+    <button mat-fab extended (click)="guestLogin()">
+        <mat-icon>brush</mat-icon>
+        Try out as a guest
     </button>
 </main>

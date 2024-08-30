@@ -1,11 +1,14 @@
 <main>
     <div class="top-bar">
         <div class="left-container">
-            <button mat-fab extended><mat-icon>arrow_back</mat-icon>Return to profile</button>
+            <a routerLink="/profile" routerLinkActive="active" ariaCurrentWhenActive="page">
+                <button mat-fab extended><mat-icon>arrow_back</mat-icon>Return to profile</button>
+            </a>
         </div>
         Selected tool: {{ selectedTool }}
         <!-- <button (click)="handleCursorModeSwitch()">SWITCH</button> -->
-        <div class="tools">
+        <app-toolbar (toolSelected)="onToolSelected($event)"></app-toolbar>
+        <!-- <div class="tools">
             <button (click)="selectTool('move')" mat-fab extended><mat-icon>open_with</mat-icon>Move</button>
             <button (click)="selectTool('draw')" mat-fab extended><mat-icon>draw</mat-icon>Pencil</button>
 
@@ -17,21 +20,32 @@
             <button mat-fab><mat-icon>image</mat-icon></button>
 
             <button mat-fab extended><mat-icon>download</mat-icon>Save to computer</button>
+        </div> -->
+    </div>
+    <div class="main-container">
+        <div class="sidebar">
+            <p>PROPERTIES</p>
+            <p>PENCIL COLOR</p>
+            <p>CONTRIBUTORS AND ROLES</p>
+            <p>CANVAS SETTINGS</p>
+            <p>CANVAS SIZE</p>
+            <p>ZOOM</p>
+            <p>HELP BUTTON</p>
+        </div>
+        <div #wrapper class="canvas-wrapper">
+            <canvas
+                #canvas
+                [style.cursor]="selectedTool === 'draw' ? 'crosshair' : 'move'"
+                (mousemove)="onMouseMove($event)"
+                (mousedown)="onMouseDown($event)"
+                (mouseup)="onMouseUp($event)"
+                (click)="onClick($event)"
+                class="canvas"
+            ></canvas>
         </div>
     </div>
-    <div #wrapper class="canvas-wrapper">
-        <canvas
-            #canvas
-            [style.cursor]="selectedTool === 'draw' ? 'crosshair' : 'move'"
-            (mousemove)="onMouseMove($event)"
-            (mousedown)="onMouseDown($event)"
-            (mouseup)="onMouseUp($event)"
-            (click)="onClick($event)"
-            class="canvas"
-        ></canvas>
-    </div>
-    <div>
-        INFO:
-        <p>logged in as: {{ user?.displayName }}, {{ user?.uid }}</p>
-    </div>
+    <!-- <div>
+            INFO:
+            <p>logged in as: {{ user?.displayName }}, {{ user?.uid }}</p>
+        </div> -->
 </main>

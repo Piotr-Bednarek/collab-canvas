@@ -10,10 +10,7 @@ import { LoginPageComponent } from '../login-page/login-page.component';
     selector: 'app-landing-page',
     standalone: true,
     imports: [
-        CommonModule,
-        RouterOutlet,
         RouterLink,
-        RouterLinkActive,
         LoginPageComponent,
         CanvasPageComponent,
         MatButtonModule,

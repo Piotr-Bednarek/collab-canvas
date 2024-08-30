@@ -116,4 +116,8 @@ export class LoginPageComponent implements OnInit {
     redirectToProfile() {
         this.router.navigate(['/profile']);
     }
+
+    guestLogin() {
+        console.log('Logging in as guest...');
+    }
 }

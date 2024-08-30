@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { Auth, User, user } from '@angular/fire/auth';
 import { Firestore } from '@angular/fire/firestore';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import {
     addDoc,
     collection,
@@ -28,13 +28,15 @@ import { Canvas } from '../../../classes/Canvas';
 import { FirebaseDrawing } from '../../firebase-drawing';
 import { Drawing } from '../../interfaces';
 
+import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { ToolbarComponent } from '../../components/toolbar/toolbar.component';
 
 @Component({
     selector: 'app-canvas-page',
     standalone: true,
-    imports: [MatIconModule, MatButtonModule],
+    imports: [MatIconModule, MatButtonModule, RouterOutlet, RouterLink, ToolbarComponent],
     templateUrl: './canvas-page.component.html',
     styleUrl: './canvas-page.component.scss',
 })
@@ -84,6 +86,10 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
     selectedTool = 'move'; // 'draw' or 'move'
 
     lastAddedDrawingId: string | null = null;
+
+    onToolSelected(tool: string): void {
+        this.selectedTool = tool;
+    }
 
     ngAfterViewInit(): void {
         this.canvasId = this.route.snapshot.paramMap.get('id');
