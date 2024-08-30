@@ -119,5 +119,6 @@ export class LoginPageComponent implements OnInit {
 
     guestLogin() {
         console.log('Logging in as guest...');
+        this.router.navigate(['/guest']);
     }
 }
