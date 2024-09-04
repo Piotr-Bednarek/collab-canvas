@@ -1,14 +1,16 @@
 import { v4 as uuidv4 } from 'uuid';
-import { DrawingBounds } from '../app/interfaces/interfaces';
+import { DrawingBounds, DrawingInterface } from '../app/interfaces/interfaces';
 import { Anchor } from './Anchor';
 import { Point } from './Point';
 
-class Drawing implements Drawing {
+class Drawing implements DrawingInterface {
     id: string;
 
     points: Point[];
     bounds: DrawingBounds;
     anchors: Anchor[];
+
+    lineWidth: number;
 
     originalPoints: Point[] = [];
     originalBounds: DrawingBounds | undefined;
@@ -38,7 +40,8 @@ class Drawing implements Drawing {
         id?: string,
         points: Point[] = [],
         bounds: DrawingBounds = { top: 0, left: 0, bottom: 0, right: 0 },
-        selected: boolean = false
+        selected: boolean = false,
+        lineWidth: number = 5
     ) {
         this.points = points;
         this.bounds = bounds;
@@ -60,6 +63,8 @@ class Drawing implements Drawing {
         } else {
             this.id = uuidv4();
         }
+
+        this.lineWidth = lineWidth;
     }
 
     addPoint(point: Point) {
@@ -85,22 +90,6 @@ class Drawing implements Drawing {
         if (this.isScalingDrawing) {
             this.calculateScaledPoints();
         }
-
-        // const WIDTH_THRESHOLD = 20;
-        // const HEIGHT_THRESHOLD = 20;
-
-        // const width = this.bounds.right - this.bounds.left;
-        // const height = this.bounds.bottom - this.bounds.top;
-
-        // if (width < WIDTH_THRESHOLD) {
-        //     this.bounds.left -= WIDTH_THRESHOLD / 2;
-        //     this.bounds.right += WIDTH_THRESHOLD / 2;
-        // }
-
-        // if (height < HEIGHT_THRESHOLD) {
-        //     this.bounds.top -= HEIGHT_THRESHOLD / 2;
-        //     this.bounds.bottom += HEIGHT_THRESHOLD / 2;
-        // }
 
         this.updateAnchors();
     }
@@ -205,7 +194,7 @@ class Drawing implements Drawing {
         }
 
         ctx.strokeStyle = 'black';
-        ctx.lineWidth = 3;
+        ctx.lineWidth = this.lineWidth;
         ctx.lineCap = 'round';
 
         ctx.beginPath();
@@ -229,6 +218,7 @@ class Drawing implements Drawing {
         const lastPoint = this.points[this.points.length - 1];
         ctx.lineTo(lastPoint.x - translateX, lastPoint.y - translateY);
 
+        ctx.lineWidth = this.lineWidth;
         ctx.stroke();
 
         if (this.isFinished) {
@@ -240,6 +230,8 @@ class Drawing implements Drawing {
         if (!this.isSelected && !this.isHovered) return;
 
         // console.log('Drawing bounds:', this.bounds);
+
+        ctx.lineWidth = 3;
 
         ctx.strokeStyle = this.isHovered ? 'red' : 'black';
         ctx.strokeStyle = this.isSelected ? 'blue' : ctx.strokeStyle;
@@ -275,11 +267,8 @@ class Drawing implements Drawing {
     }
 
     checkHoverAnchor(x: number, y: number) {
-        // if (this.selectedAnchor) return;
-
         this.hoveredAnchor = null;
 
-        // console.log('Checking hover anchor');
         for (const anchor of this.anchors) {
             if (
                 x > anchor.x - this.anchorSize / 2 &&
@@ -315,10 +304,12 @@ class Drawing implements Drawing {
     }
 
     handleMouseUp() {
+        this.updateBounds();
+        this.updateOriginalBounds();
+
         this.clearSelectedAnchor();
 
-        this.updateOriginalBounds();
-        this.updateBounds();
+        console.table({ bounds: this.bounds, originalBounds: this.originalBounds });
     }
 
     clearSelectedAnchor() {
@@ -335,18 +326,31 @@ class Drawing implements Drawing {
 
     updateOriginalBounds() {
         // console.log('Updating original bounds');
+        this.validateBounds();
+
         this.originalBounds = { ...this.bounds };
         this.originalPoints = [...this.points];
     }
 
-    handleMouseMove(x: number, y: number) {
-        // const dx = x - this.moveStartX;
-        // const dy = y - this.moveStartY;
+    validateBounds() {
+        if (!this.bounds) return;
 
+        if (this.bounds.left > this.bounds.right) {
+            const temp = this.bounds.left;
+            this.bounds.left = this.bounds.right;
+            this.bounds.right = temp;
+        }
+
+        if (this.bounds.top > this.bounds.bottom) {
+            const temp = this.bounds.top;
+            this.bounds.top = this.bounds.bottom;
+            this.bounds.bottom = temp;
+        }
+    }
+
+    handleMouseMove(x: number, y: number) {
         this.translateX += x;
         this.translateY += y;
-
-        // console.log('TranslateX:', this.translateX, 'TranslateY:', this.translateY);
 
         if (this.selectedAnchor) {
             this.isScalingDrawing = true;
@@ -382,6 +386,7 @@ class Drawing implements Drawing {
                     break;
             }
 
+            // Ensure bounds are updated correctly after scaling
             this.updateBounds();
 
             return;
@@ -394,6 +399,7 @@ class Drawing implements Drawing {
             point.y += y;
         }
 
+        // Ensure bounds are updated correctly after moving
         this.updateBoundsAfterMove();
         this.updateBounds();
     }
@@ -419,6 +425,12 @@ class Drawing implements Drawing {
     moveStart(x: number, y: number) {
         this.moveStartX = x;
         this.moveStartY = y;
+    }
+
+    setThickness(thickness: number) {
+        this.lineWidth = thickness;
+
+        console.log('Setting thickness:', thickness);
     }
 
     exportDrawing() {

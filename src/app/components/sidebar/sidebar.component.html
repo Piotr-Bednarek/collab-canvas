@@ -1,0 +1,117 @@
+<div class="sidebar">
+    <div class="container">
+        thickness: {{ thicknesses[selectedThicknessIndex] }}px
+        <div class="pen-size">
+            <ng-container *ngIf="selectedThicknessIndex != 0; else pen0">
+                <button mat-mini-fab matTooltip="{{ thicknesses[0] }}px" (click)="onThicknessChange(0)">
+                    <mat-icon svgIcon="pen-size-1" aria-hidden="false"></mat-icon>
+                </button>
+            </ng-container>
+            <ng-template #pen0>
+                <button
+                    mat-mini-fab
+                    disabled
+                    matTooltip="{{ thicknesses[0] }}px"
+                    (click)="onThicknessChange(0)"
+                >
+                    <mat-icon svgIcon="pen-size-1" aria-hidden="false"></mat-icon>
+                </button>
+            </ng-template>
+
+            <ng-container *ngIf="selectedThicknessIndex != 1; else pen1">
+                <button mat-mini-fab matTooltip="{{ thicknesses[1] }}px" (click)="onThicknessChange(1)">
+                    <mat-icon svgIcon="pen-size-2" aria-hidden="false"></mat-icon>
+                </button>
+            </ng-container>
+            <ng-template #pen1>
+                <button
+                    mat-mini-fab
+                    disabled
+                    matTooltip="{{ thicknesses[1] }}px"
+                    (click)="onThicknessChange(1)"
+                >
+                    <mat-icon svgIcon="pen-size-2" aria-hidden="false"></mat-icon>
+                </button>
+            </ng-template>
+
+            <ng-container *ngIf="selectedThicknessIndex != 2; else pen2">
+                <button mat-mini-fab matTooltip="{{ thicknesses[2] }}px" (click)="onThicknessChange(2)">
+                    <mat-icon svgIcon="pen-size-3" aria-hidden="false"></mat-icon>
+                </button>
+            </ng-container>
+            <ng-template #pen2>
+                <button
+                    mat-mini-fab
+                    disabled
+                    matTooltip="{{ thicknesses[2] }}px"
+                    (click)="onThicknessChange(2)"
+                >
+                    <mat-icon svgIcon="pen-size-3" aria-hidden="false"></mat-icon>
+                </button>
+            </ng-template>
+
+            <ng-container *ngIf="selectedThicknessIndex != 3; else pen3">
+                <button mat-mini-fab matTooltip="{{ thicknesses[3] }}px" (click)="onThicknessChange(3)">
+                    <mat-icon svgIcon="pen-size-4" aria-hidden="false"></mat-icon>
+                </button>
+            </ng-container>
+            <ng-template #pen3>
+                <button
+                    mat-mini-fab
+                    disabled
+                    matTooltip="{{ thicknesses[3] }}px"
+                    (click)="onThicknessChange(3)"
+                >
+                    <mat-icon svgIcon="pen-size-4" aria-hidden="false"></mat-icon>
+                </button>
+            </ng-template>
+
+            <ng-container *ngIf="selectedThicknessIndex != 4; else pen4">
+                <button mat-mini-fab matTooltip="{{ thicknesses[4] }}px" (click)="onThicknessChange(4)">
+                    <mat-icon svgIcon="pen-size-5" aria-hidden="false"></mat-icon>
+                </button>
+            </ng-container>
+            <ng-template #pen4>
+                <button
+                    mat-mini-fab
+                    disabled
+                    matTooltip="{{ thicknesses[4] }}px"
+                    (click)="onThicknessChange(4)"
+                >
+                    <mat-icon svgIcon="pen-size-5" aria-hidden="false"></mat-icon>
+                </button>
+            </ng-template>
+        </div>
+    </div>
+    <div class="footer">
+        <button mat-icon-button (click)="handleZoomOutClick()">
+            <mat-icon>remove</mat-icon>
+        </button>
+        <button style="width: 5rem" mat-stroked-button (click)="handleZoomResetClick()">
+            {{ zoomValue }}
+        </button>
+        <button mat-icon-button (click)="handleZoomInClick()">
+            <mat-icon>add</mat-icon>
+        </button>
+    </div>
+</div>
+
+<!-- <div *ngIf="selectedTool != 'move'; else disabledMoveTemplate">
+    <button (click)="selectTool('move')" mat-fab extended><mat-icon>open_with</mat-icon>Move</button>
+</div>
+<ng-template #disabledMoveTemplate>
+    <button (click)="selectTool('move')" mat-fab extended disabled><mat-icon>open_with</mat-icon>Move</button>
+</ng-template> -->
+
+<!-- <button mat-mini-fab matTooltip="{{ thicknesses[1] }}px" (click)="onThicknessChange(1)">
+            <mat-icon svgIcon="pen-size-2" aria-hidden="false"></mat-icon>
+        </button>
+        <button mat-mini-fab matTooltip="{{ thicknesses[2] }}px" (click)="onThicknessChange(2)">
+            <mat-icon svgIcon="pen-size-3" aria-hidden="false"></mat-icon>
+        </button>
+        <button mat-mini-fab matTooltip="{{ thicknesses[3] }}px" (click)="onThicknessChange(3)">
+            <mat-icon svgIcon="pen-size-4" aria-hidden="false"></mat-icon>
+        </button>
+        <button mat-mini-fab matTooltip="{{ thicknesses[4] }}px" (click)="onThicknessChange(4)">
+            <mat-icon svgIcon="pen-size-5" aria-hidden="false"></mat-icon>
+        </button> -->

@@ -10,26 +10,15 @@
     </div>
     <div class="main-container">
         <div class="sidebar">
-            <p>PROPERTIES</p>
-            <p>PENCIL COLOR</p>
-            <p>CONTRIBUTORS AND ROLES</p>
-            <p>CANVAS SETTINGS</p>
-            <p>CANVAS SIZE</p>
-            <p>HELP BUTTON</p>
-            <div>
-                <div style="display: flex; gap: 0.25rem">
-                    <button mat-icon-button (click)="canvasZoomOut()">
-                        <mat-icon>remove</mat-icon>
-                    </button>
-                    <button style="width: 5rem" mat-stroked-button (click)="resetCanvasScale()">
-                        {{ getZoomValue() }}
-                    </button>
-                    <button mat-icon-button (click)="canvasZoomIn()">
-                        <mat-icon>add</mat-icon>
-                    </button>
-                </div>
-            </div>
+            <app-sidebar
+                [zoomValue]="getZoomValue()"
+                (thicknessSelected)="onThicknessSelected($event)"
+                (zoomOutClicked)="zoomOutClicked($event)"
+                (zoomInClicked)="zoomInClicked($event)"
+                (zoomResetClicked)="zoomResetClicked($event)"
+            ></app-sidebar>
         </div>
+
         <div #wrapper class="canvas-wrapper">
             <canvas
                 #canvas
@@ -47,3 +36,83 @@
             <p>logged in as: {{ user?.displayName }}, {{ user?.uid }}</p>
         </div> -->
 </main>
+
+<!-- <div style="display: flex; flex-direction: column; justify-content: space-between; width: 100%">
+                <h4>Pencil</h4>
+                <div
+                    style="
+                        width: 100%;
+                        display: flex;
+                        flex-direction: row;
+                        justify-content: space-evenly;
+                        align-items: center;
+                    "
+                >
+                    <mat-icon>border_color</mat-icon>
+                    <mat-slider discrete min="1" max="10" step="1">
+                        <input matSliderThumb value="5" />
+                    </mat-slider>
+                </div>
+                <div style="padding: 0 1rem 0 0.5rem">
+                    <div
+                        style="
+                            width: 100%;
+                            display: flex;
+                            flex-direction: row;
+                            justify-content: space-between;
+                            align-items: center;
+                        "
+                    >
+                        RED
+                        <mat-slider discrete min="1" max="255" step="1">
+                            <input matSliderThumb value="5" />
+                        </mat-slider>
+                    </div>
+                    <div
+                        style="
+                            width: 100%;
+                            display: flex;
+                            flex-direction: row;
+                            justify-content: space-between;
+                            align-items: center;
+                        "
+                    >
+                        GREEN
+                        <mat-slider discrete min="1" max="255" step="1">
+                            <input matSliderThumb value="5" />
+                        </mat-slider>
+                    </div>
+                    <div
+                        style="
+                            width: 100%;
+                            display: flex;
+                            flex-direction: row;
+                            justify-content: space-between;
+                            align-items: center;
+                        "
+                    >
+                        BLUE
+                        <mat-slider discrete min="1" max="255" step="1">
+                            <input matSliderThumb value="5" />
+                        </mat-slider>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: center; width: 100%">
+                        <div
+                            style="
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                width: 9rem;
+                                background-color: red;
+                                height: 3rem;
+                            "
+                        ></div>
+                    </div>
+                </div>
+                <p>PROPERTIES</p>
+                <p>PENCIL COLOR</p>
+                <p>CONTRIBUTORS AND ROLES</p>
+                <p>CANVAS SETTINGS</p>
+                <p>CANVAS SIZE</p>
+                <p>HELP BUTTON</p>
+            </div> -->

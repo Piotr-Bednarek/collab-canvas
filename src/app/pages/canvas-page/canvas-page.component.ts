@@ -1,4 +1,3 @@
-import { coerceStringArray } from '@angular/cdk/coercion';
 import {
     AfterViewInit,
     Component,
@@ -26,18 +25,31 @@ import {
 import { Subscription } from 'rxjs';
 import { Canvas } from '../../../classes/Canvas';
 import { FirebaseDrawing } from '../../firebase-drawing';
-import { Drawing } from '../../interfaces/interfaces';
+import { DrawingInterface } from '../../interfaces/interfaces';
 
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { SidebarComponent } from '../../components/sidebar/sidebar.component';
 import { ToolbarComponent } from '../../components/toolbar/toolbar.component';
+
 import { SelectedTool } from '../../interfaces/selected-tool';
+
+import { MatSliderModule } from '@angular/material/slider';
 
 @Component({
     selector: 'app-canvas-page',
     standalone: true,
-    imports: [MatIconModule, MatButtonModule, RouterOutlet, RouterLink, ToolbarComponent],
+    imports: [
+        MatIconModule,
+        MatButtonModule,
+        RouterOutlet,
+        RouterLink,
+        ToolbarComponent,
+        MatSliderModule,
+        SidebarComponent,
+    ],
     templateUrl: './canvas-page.component.html',
     styleUrl: './canvas-page.component.scss',
 })
@@ -81,6 +93,8 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
     private lastMouseMoveEvent: MouseEvent | null = null;
     isThrottled: any;
 
+    thickness: number = 1;
+
     // private isDrawing: boolean = false;
     // private isMoving: boolean = false;
 
@@ -90,6 +104,11 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
 
     onToolSelected(tool: string): void {
         this.canvas?.setTool(tool as SelectedTool);
+    }
+
+    onThicknessSelected(thickness: number): void {
+        // console.log('Thickness selected:', thickness);
+        this.canvas?.setThickness(thickness);
     }
 
     ngAfterViewInit(): void {
@@ -173,18 +192,7 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
 
     ngOnDestroy(): void {
         this.userSubscription.unsubscribe();
-        // this.drawingSubscription();
     }
-
-    // handleDrawingUpdate(drawing: FirebaseDrawing) {
-    //     console.log('Updating drawing...');
-
-    //     // this.canvas?.updateDrawing(drawing);
-    // }
-
-    // fetchCanvas() {
-    //     console.log('Fetching canvas...');
-    // }
 
     exportCanvas() {
         console.log('Exporting canvas...');
@@ -296,26 +304,30 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
         const roundedZoomValue = parseFloat(zoomValue.toFixed(2)); // Convert to number to remove trailing .00
         const zoomString = roundedZoomValue + '%';
 
+        // console.log('Zoom value:', zoomString);
+
         return zoomString;
     }
 
-    resetCanvasScale() {
+    zoomResetClicked($event: any) {
         if (!this.canvas) return;
 
         this.canvas.resetScale();
     }
 
-    canvasZoomOut() {
+    zoomOutClicked($event: any) {
         if (!this.canvas) return;
 
         this.canvas.zoomOut();
     }
 
-    canvasZoomIn() {
+    zoomInClicked($event: any) {
         if (!this.canvas) return;
 
         this.canvas.zoomIn();
     }
+
+    // onThicknessChange($event: any) {}
 
     // TODO check if user is authorized to add to this canvas
     // async addToFirebase(drawing: FirebaseDrawing) {

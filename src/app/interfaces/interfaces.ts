@@ -10,11 +10,12 @@ interface AnchorType {
     isSelected: boolean;
 }
 
-interface Drawing {
+interface DrawingInterface {
     id: string;
     points: PointType[];
     bounds: DrawingBounds;
-    selected: boolean;
+    // selected: boolean;
+    lineWidth: number;
 }
 
 interface DrawingBounds {
@@ -24,4 +25,4 @@ interface DrawingBounds {
     right: number;
 }
 
-export { AnchorType, Drawing, DrawingBounds, PointType };
+export { AnchorType, DrawingBounds, DrawingInterface, PointType };

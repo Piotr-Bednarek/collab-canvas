@@ -20,12 +20,12 @@ class Canvas {
     // public onDrawingComplete: EventEmitter<Drawing> = new EventEmitter<Drawing>();
     // public onDrawingUpdate: EventEmitter<Drawing> = new EventEmitter<Drawing>();
     // public onClearSelect: EventEmitter<Drawing> = new EventEmitter<Drawing>();
-
     //-----------------------------------
 
-    private skipCheck: boolean = false;
-
     private selectedTool: SelectedTool = 'move';
+    private selectedThickness: number = 7;
+
+    //-----------------------------------
 
     private isMoving: boolean = false;
     private isDrawing: boolean = false;
@@ -39,6 +39,7 @@ class Canvas {
     private SCALE_BY = 1.05;
 
     private WHEEL_PAN_SPEED = 30;
+    private skipCheck: boolean = false;
 
     //-----------------------------------
 
@@ -73,10 +74,21 @@ class Canvas {
         this.grid = new Grid('lines', 1, 'black', 0.2, this.gridSize);
 
         this.eraser = new Eraser([]);
+
+        this.draw();
     }
 
     setTool(tool: SelectedTool) {
         this.selectedTool = tool;
+    }
+    setThickness(thickness: number) {
+        this.selectedThickness = thickness;
+
+        if (this.selectedDrawing) {
+            this.selectedDrawing.setThickness(thickness);
+
+            this.draw();
+        }
     }
 
     handleWheel($event: WheelEvent) {
@@ -262,6 +274,8 @@ class Canvas {
         if (!this.drawing) {
             this.drawing = new Drawing();
         }
+
+        this.drawing.setThickness(this.selectedThickness);
 
         // Apply translation and scaling to get the correct point
         const scaledX = (x - this.scaleOriginX) / this.canvasScale + this.translateX;
@@ -451,7 +465,17 @@ class Canvas {
     handleMouseMoveSelectedDrawing(x: number, y: number) {
         if (!this.selectedDrawing) return;
 
-        this.selectedDrawing.handleMouseMove(x, y);
+        //find the selecteddrawing in the drawings array
+        const drawingIndex = this.drawings.findIndex((d) => d === this.selectedDrawing);
+
+        if (drawingIndex === -1) {
+            console.error('Drawing not found');
+            return;
+        }
+
+        this.drawings[drawingIndex].handleMouseMove(x, y);
+
+        // this.selectedDrawing.handleMouseMove(x, y);
         this.draw();
     }
 
