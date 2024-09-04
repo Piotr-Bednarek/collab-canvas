@@ -8,6 +8,17 @@
         </button>
     </ng-template>
 
+    <div *ngIf="selectedTool != 'select'; else disabledSelectTemplate">
+        <button (click)="selectTool('select')" mat-fab extended="">
+            <mat-icon svgIcon="select-icon-on" aria-hidden="false"></mat-icon>Select
+        </button>
+    </div>
+    <ng-template #disabledSelectTemplate>
+        <button (click)="selectTool('select')" mat-fab extended disabled>
+            <mat-icon svgIcon="select-icon-off" aria-hidden="false"></mat-icon>Select
+        </button>
+    </ng-template>
+
     <div *ngIf="selectedTool != 'draw'; else disabledDrawTemplate">
         <button (click)="selectTool('draw')" mat-fab extended><mat-icon>draw</mat-icon>Pencil</button>
     </div>
@@ -40,17 +51,6 @@
     </div>
     <ng-template #disabledCircleTemplate>
         <button (click)="selectTool('circle')" mat-fab disabled><mat-icon>circle</mat-icon></button>
-    </ng-template>
-
-    <div *ngIf="selectedTool != 'select'; else disabledSelectTemplate">
-        <button (click)="selectTool('select')" mat-fab>
-            <mat-icon svgIcon="select-icon-on" aria-hidden="false"></mat-icon>
-        </button>
-    </div>
-    <ng-template #disabledSelectTemplate>
-        <button (click)="selectTool('select')" mat-fab disabled>
-            <mat-icon svgIcon="select-icon-off" aria-hidden="false"></mat-icon>
-        </button>
     </ng-template>
 
     <div *ngIf="selectedTool != 'text_field'; else disabledTextFieldTemplate">

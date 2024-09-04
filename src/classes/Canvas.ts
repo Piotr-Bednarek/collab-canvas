@@ -1,5 +1,6 @@
 import { ElementRef, inject, Inject } from '@angular/core';
 import { Drawing } from './Drawing';
+import { Grid } from './Grid';
 import { Point } from './Point';
 
 import { EventEmitter, Injectable } from '@angular/core';
@@ -33,10 +34,17 @@ class Canvas {
 
     private canvasScale: number = 1;
 
+    private canvasScaleMin: number = 0.2;
+    private canvasScaleMax: number = 4;
+
+    private SCALE_BY = 1.05;
+
     //-----------------------------------
 
     canvasElementRef: ElementRef | null = null;
     context: CanvasRenderingContext2D | null = null;
+
+    grid: Grid | null = null;
 
     drawings: Drawing[] = [];
     hoveredDrawing: Drawing | null = null;
@@ -60,33 +68,49 @@ class Canvas {
     constructor(canvasElementRef: ElementRef, context: CanvasRenderingContext2D) {
         this.canvasElementRef = canvasElementRef;
         this.context = context;
+        this.grid = new Grid('lines', 1, 'black', 0.2, this.gridSize);
     }
 
     setTool(tool: SelectedTool) {
         this.selectedTool = tool;
     }
 
-    handleWheel($event: WheelEvent) {
+    handleCtrlWheel($event: WheelEvent) {
         if (!this.context) return;
-        console.log('wheel');
 
-        let SCALE_BY = 1.03;
-        const MOUSE_X = $event.offsetX;
-        const MOUSE_Y = $event.offsetY;
+        const mouseX = $event.offsetX;
+        const mouseY = $event.offsetY;
 
-        if ($event.deltaY < 0) {
-            this.canvasScale *= SCALE_BY;
-        } else if ($event.deltaY > 0) {
-            SCALE_BY = 1 / SCALE_BY;
-            this.canvasScale *= SCALE_BY;
+        let scaleBy = this.SCALE_BY;
+        if ($event.deltaY > 0) {
+            scaleBy = 1 / this.SCALE_BY;
         }
 
-        // Reduce the amount of movement
-        const dx = MOUSE_X - this.scaleOriginX;
-        const dy = MOUSE_Y - this.scaleOriginY;
-        this.scaleOriginX += dx * (1 - SCALE_BY);
-        this.scaleOriginY += dy * (1 - SCALE_BY);
+        this.calculateZoomValue(mouseX, mouseY, scaleBy);
+    }
 
+    calculateZoomValue(originX: number, originY: number, scaleBy: number) {
+        const dx = originX - this.scaleOriginX;
+        const dy = originY - this.scaleOriginY;
+
+        // Calculate the new scale
+        let newScale = this.canvasScale * scaleBy;
+
+        // Clamp the new scale between canvasScaleMin and canvasScaleMax
+        if (newScale < this.canvasScaleMin) {
+            newScale = this.canvasScaleMin;
+        } else if (newScale > this.canvasScaleMax) {
+            newScale = this.canvasScaleMax;
+        }
+
+        // Adjust the scale origin based on the clamped scale
+        this.scaleOriginX += dx * (1 - newScale / this.canvasScale);
+        this.scaleOriginY += dy * (1 - newScale / this.canvasScale);
+
+        // Update the canvas scale
+        this.canvasScale = newScale;
+
+        // Redraw the canvas
         this.draw();
     }
 
@@ -94,7 +118,7 @@ class Canvas {
         console.log('mouse down');
 
         if (this.selectedTool === 'move') {
-            this.skipCheck = false;
+            // this.skipCheck = false;
             console.log('move tool');
             console.log('move tool');
             console.log('move tool');
@@ -102,11 +126,20 @@ class Canvas {
 
             this.moveStart($event.offsetX, $event.offsetY);
 
+            // this.handleDrawingSelect();
+
+            // this.handleAnchorSelect();
+        }
+
+        if (this.selectedTool === 'select') {
+            this.skipCheck = false;
+
+            this.moveStart($event.offsetX, $event.offsetY);
+
             this.handleDrawingSelect();
 
             this.handleAnchorSelect();
         }
-
         if (this.selectedTool === 'draw') {
             this.isDrawing = true;
         }
@@ -142,17 +175,40 @@ class Canvas {
             this.handleErasing();
         }
 
+        // console.log(
+        //     'scale: ',
+        //     this.canvasScale,
+        //     'translateX: ',
+        //     this.translateX,
+        //     'translateY: ',
+        //     this.translateY
+        // );
+
+        // console.log('normal: ', $event.offsetX, $event.offsetY);
+        // console.log('scaled: ', x, y);
+
         // if (this.selectedDrawing === this.hoveredDrawing) {
         //     // this.selectedDrawing?.handleMouseMove($event.offsetX, $event.offsetY);
         //     this.handleSelectedDrawingMouseMove($event.offsetX, $event.offsetY);
         // }
     }
 
+    // getTransformedMousePosition(mouseX: number, mouseY: number): { x: number; y: number } {
+    //     const transformedX = (mouseX - this.translateX) / this.canvasScale;
+    //     const transformedY = (mouseY - this.translateY) / this.canvasScale;
+    //     return { x: transformedX, y: transformedY };
+    // }
+
     handleMouseUp($event: MouseEvent) {
-        console.log('mouse up');
+        // console.log('mouse up');
 
         if (this.selectedTool === 'move') {
-            console.log('here');
+            // console.log('here');
+            this.isMoving = false;
+            // this.clearSelected();
+        }
+
+        if (this.selectedTool === 'select') {
             this.isMoving = false;
             this.clearSelected();
         }
@@ -171,13 +227,21 @@ class Canvas {
     handleMovingCanvas(x: number, y: number) {
         if (!this.context) return;
 
+        // console.log('moving canvas');
+        // console.log('scale: ', this.canvasScale);
+
+        // console.log('move start x: ', this.moveStartX, 'move start y: ', this.moveStartY);
+        // console.log('x: ', x, 'y: ', y);
+
         const dx = x - this.moveStartX;
         const dy = y - this.moveStartY;
 
+        // console.log('dx: ', dx, 'dy: ', dy);
+
         this.context.translate(dx, dy);
 
-        this.translateX -= dx;
-        this.translateY -= dy;
+        this.translateX -= dx / this.canvasScale;
+        this.translateY -= dy / this.canvasScale;
 
         this.moveStart(x, y);
 
@@ -197,8 +261,11 @@ class Canvas {
     handleMoveStart(x: number, y: number) {
         if (!this.context) return;
 
-        const dx = x - this.moveStartX;
-        const dy = y - this.moveStartY;
+        // const dx = (x - this.moveStartX * this.canvasScale) * this.canvasScale;
+        // const dy = (y - this.moveStartY * this.canvasScale) * this.canvasScale;
+
+        const dx = x - this.moveStartX * this.canvasScale;
+        const dy = y - this.moveStartY * this.canvasScale;
 
         // console.log(this.hoveredDrawing);
 
@@ -220,6 +287,11 @@ class Canvas {
         // this.handleDrawingSelect();
     }
 
+    moveStart(x: number, y: number) {
+        this.moveStartX = x;
+        this.moveStartY = y;
+    }
+
     addDrawing() {
         if (!this.drawing) return false;
 
@@ -237,11 +309,18 @@ class Canvas {
             this.drawing = new Drawing();
         }
 
-        this.drawing.addPoint(new Point(x + this.translateX, y + this.translateY));
+        // Apply translation and scaling to get the correct point
+        const scaledX = (x - this.scaleOriginX) / this.canvasScale + this.translateX;
+        const scaledY = (y - this.scaleOriginY) / this.canvasScale + this.translateY;
+
+        // Debugging for transformed points
+        console.log('scaled x: ', scaledX, 'scaled y: ', scaledY);
+
+        // Add the transformed point to the drawing
+        this.drawing.addPoint(new Point(scaledX, scaledY));
 
         this.drawUnfinished();
     }
-
     addPointToEraserTrail(x: number, y: number) {
         this.eraserTrail.push(new Point(x + this.translateX, y + this.translateY));
 
@@ -260,8 +339,16 @@ class Canvas {
 
     draw() {
         this.clearAndScaleCanvas();
+        this.grid?.draw(
+            this.context!,
+            this.translateX,
+            this.translateY,
+            this.canvasScale,
+            this.scaleOriginX,
+            this.scaleOriginY
+        );
 
-        this.drawGrid();
+        // this.drawGrid();
         this.drawUnfinished();
 
         for (const drawing of this.drawings) {
@@ -271,6 +358,56 @@ class Canvas {
         this.drawEraserTrail();
     }
 
+    // drawGrid() {
+    //     if (!this.context) return;
+    //     if (!this.canvasElementRef) return;
+
+    //     this.context.lineWidth = 1;
+
+    //     const canvasWidth = this.canvasElementRef.nativeElement.width;
+    //     const canvasHeight = this.canvasElementRef.nativeElement.height;
+
+    //     const topLeftX = -this.scaleOriginX / this.canvasScale;
+    //     const topLeftY = -this.scaleOriginY / this.canvasScale;
+
+    //     const bottomRightX = (canvasWidth - this.scaleOriginX) / this.canvasScale;
+    //     const bottomRightY = (canvasHeight - this.scaleOriginY) / this.canvasScale;
+
+    //     const gridSpacing = this.gridSize * this.canvasScale;
+
+    //     this.context.beginPath();
+
+    //     //draw from the middleX to the left vertical line
+    //     for (let x = 0 - this.translateX; x > topLeftX; x -= gridSpacing) {
+    //         this.context.moveTo(x, topLeftY);
+    //         this.context.lineTo(x, bottomRightY);
+    //     }
+    //     //draw from the middleX to the right vertical line
+    //     for (let x = 0 - this.translateX + gridSpacing; x < bottomRightX; x += gridSpacing) {
+    //         this.context.moveTo(x, topLeftY);
+    //         this.context.lineTo(x, bottomRightY);
+    //     }
+    //     //draw from the middleY to the top horizontal line
+    //     for (let y = 0 - this.translateY; y > topLeftY; y -= gridSpacing) {
+    //         this.context.moveTo(topLeftX, y);
+    //         this.context.lineTo(bottomRightX, y);
+    //     }
+    //     //draw from the middleY to the bottom horizontal line
+    //     for (let y = 0 - this.translateY + gridSpacing; y < bottomRightY; y += gridSpacing) {
+    //         this.context.moveTo(topLeftX, y);
+    //         this.context.lineTo(bottomRightX, y);
+    //     }
+
+    //     this.context.strokeStyle = '#ccc';
+    //     // this.context.strokeStyle = 'black';
+    //     this.context.stroke();
+
+    //     this.context.beginPath();
+    //     this.context.arc(0 - this.translateX, 0 - this.translateY, 5, 0, 2 * Math.PI);
+    //     this.context.fillStyle = 'black';
+    //     this.context.fill();
+    // }
+
     drawUnfinished() {
         if (!this.drawing) return;
 
@@ -278,22 +415,19 @@ class Canvas {
     }
 
     checkHover(x: number, y: number) {
-        // if (this.selectedDrawing) return;
-
-        x = x + this.translateX;
-        y = y + this.translateY;
-
-        // this.clearSelected();
+        // Adjust for translation and scaling
+        const transformedX = (x - this.scaleOriginX) / this.canvasScale + this.translateX;
+        const transformedY = (y - this.scaleOriginY) / this.canvasScale + this.translateY;
 
         this.hoveredDrawing = null;
 
         for (let i = this.drawings.length - 1; i >= 0; i--) {
             const drawing = this.drawings[i];
             if (
-                x > drawing.bounds.left &&
-                x < drawing.bounds.right &&
-                y > drawing.bounds.top &&
-                y < drawing.bounds.bottom
+                transformedX > drawing.bounds.left &&
+                transformedX < drawing.bounds.right &&
+                transformedY > drawing.bounds.top &&
+                transformedY < drawing.bounds.bottom
             ) {
                 drawing.isHovered = true;
                 this.hoveredDrawing = drawing;
@@ -303,10 +437,6 @@ class Canvas {
             }
         }
 
-        // console.log(this.hoveredDrawing?.bounds);
-        // console.log(this.hoveredDrawing?.isHovered);
-        // console.log('x: ', x, 'y: ', y);
-
         if (this.hoveredDrawing) {
             this.drawings.forEach((drawing) => {
                 if (drawing !== this.hoveredDrawing) {
@@ -314,6 +444,16 @@ class Canvas {
                 }
             });
         }
+    }
+
+    checkHoverAnchor(x: number, y: number) {
+        if (!this.selectedDrawing) return;
+
+        // Adjust for translation and scaling
+        const transformedX = (x - this.scaleOriginX) / this.canvasScale + this.translateX;
+        const transformedY = (y - this.scaleOriginY) / this.canvasScale + this.translateY;
+
+        this.selectedDrawing.checkHoverAnchor(transformedX, transformedY);
     }
 
     clearAfterDrawingMove() {
@@ -369,15 +509,6 @@ class Canvas {
         this.eraserTrail = [];
     }
 
-    checkHoverAnchor(x: number, y: number) {
-        if (!this.selectedDrawing) return;
-
-        x = x + this.translateX;
-        y = y + this.translateY;
-
-        this.selectedDrawing.checkHoverAnchor(x, y);
-    }
-
     handleDrawingSelect() {
         if (this.skipCheck) {
             this.skipCheck = false;
@@ -407,35 +538,32 @@ class Canvas {
         this.selectedDrawing.handleAnchorSelect();
     }
 
-    drawGrid() {
-        if (!this.context) return;
-        if (!this.canvasElementRef) return;
+    // logCoords() {
+    //     if (!this.canvasElementRef) return;
 
-        this.context.lineWidth = 1;
+    //     const canvasWidth = this.canvasElementRef.nativeElement.width;
+    //     const canvasHeight = this.canvasElementRef.nativeElement.height;
 
-        const context = this.canvasElementRef.nativeElement.getContext('2d');
-        const canvasWidth = this.canvasElementRef.nativeElement.width;
-        const canvasHeight = this.canvasElementRef.nativeElement.height;
+    //     // The visible top-left corner is derived by factoring in the translation, scale, and scale origin
+    //     const topLeftX = (0 - this.scaleOriginX) / this.canvasScale + this.translateX;
+    //     const topLeftY = (0 - this.scaleOriginY) / this.canvasScale + this.translateY;
 
-        if (!context) return;
+    //     // The bottom-right corner is similarly calculated using the canvas width and height
+    //     const bottomRightX = (canvasWidth - this.scaleOriginX) / this.canvasScale + this.translateX;
+    //     const bottomRightY = (canvasHeight - this.scaleOriginY) / this.canvasScale + this.translateY;
 
-        this.context.beginPath();
-        for (let x = -this.translateX % this.gridSize; x < canvasWidth; x += this.gridSize) {
-            context.moveTo(x, 0);
-            context.lineTo(x, canvasHeight);
-        }
-        for (let y = -this.translateY % this.gridSize; y < canvasHeight; y += this.gridSize) {
-            context.moveTo(0, y);
-            context.lineTo(canvasWidth, y);
-        }
-        context.strokeStyle = '#ccc';
-        context.stroke();
+    //     // Log the results for debugging
+    //     console.log('Visible Top-Left (X, Y): ', topLeftX, topLeftY);
+    //     console.log('Visible Bottom-Right (X, Y): ', bottomRightX, bottomRightY);
 
-        this.context.beginPath();
-        this.context.arc(0 - this.translateX, 0 - this.translateY, 5, 0, 2 * Math.PI);
-        context.fillStyle = 'black';
-        this.context.fill();
-    }
+    //     //draw dots on the visible ends of the canvas
+    //     if (!this.context) return;
+    //     this.context.beginPath();
+    //     this.context.arc(topLeftX, topLeftY, 5, 0, 2 * Math.PI);
+    //     this.context.fillStyle = 'black';
+
+    //     this.context.fill();
+    // }
 
     drawEraserTrail() {
         if (this.eraserTrail.length === 0) return;
@@ -480,11 +608,6 @@ class Canvas {
             this.scaleOriginX,
             this.scaleOriginY
         );
-    }
-
-    moveStart(x: number, y: number) {
-        this.moveStartX = x;
-        this.moveStartY = y;
     }
 
     handleSelectedDrawingMouseMove(x: number, y: number) {
@@ -544,6 +667,33 @@ class Canvas {
 
     getSelectedTool(): SelectedTool {
         return this.selectedTool;
+    }
+
+    getZoomValue(): string {
+        // console.log('zoom value: ', this.canvasScale.toFixed(2));
+
+        return this.canvasScale.toFixed(2);
+    }
+
+    resetScale() {
+        this.scaleOriginX = this.translateX * (1 - this.canvasScale);
+        this.scaleOriginY = this.translateY * (1 - this.canvasScale);
+
+        this.canvasScale = 1;
+
+        this.draw();
+    }
+
+    zoomOut() {
+        const canvasWidth = this.canvasElementRef?.nativeElement.width || 0;
+        const canvasHeight = this.canvasElementRef?.nativeElement.height || 0;
+        this.calculateZoomValue(canvasWidth / 2, canvasHeight / 2, 1 / this.SCALE_BY / 1.5);
+    }
+
+    zoomIn() {
+        const canvasWidth = this.canvasElementRef?.nativeElement.width || 0;
+        const canvasHeight = this.canvasElementRef?.nativeElement.height || 0;
+        this.calculateZoomValue(canvasWidth / 2, canvasHeight / 2, this.SCALE_BY * 1.5);
     }
 }
 

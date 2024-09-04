@@ -206,81 +206,53 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
 
     private handleMouseMove($event: MouseEvent | null) {
         if (!$event) return;
-
         if (!this.canvas) return;
-
-        // console.log('Mouse move');
 
         this.canvas.handleMouseMove($event);
 
-        // this.handleMouseHoverCheck($event);
-        // if (this.selectedTool === 'move') {
-        //     if (!this.isMoving) return;
-
-        //     this.canvas?.handleMoveStart($event.offsetX, $event.offsetY);
-        // }
-
-        // if (!this.isDrawing) return;
-
         this.canvas.draw();
-
-        // this.canvas?.addPointToDrawing($event.offsetX, $event.offsetY);
     }
 
     onMouseDown($event: MouseEvent) {
         if (!this.canvas) return;
 
         this.canvas.handleMouseDown($event);
-
-        // if (this.selectedTool === 'move') {
-        //     this.canvas.moveStart($event.offsetX, $event.offsetY);
-
-        //     this.isMoving = true;
-        //     this.handleMouseHoverCheck($event);
-        //     this.handleMouseSelect();
-        // } else if (this.selectedTool === 'draw') {
-        //     this.isDrawing = true;
-        //     this.canvas.handleDrawingSelect();
-        // }
     }
 
     onMouseUp($event: MouseEvent) {
         if (!this.canvas) return;
 
-        // console.log('Mouse up');
-
         this.canvas.handleMouseUp($event);
-
-        // if (this.selectedTool === 'move') {
-        //     this.isMoving = false;
-        //     this.canvas?.handleMouseUp();
-        // } else if (this.selectedTool === 'draw') {
-        //     if (this.canvas?.addDrawing()) {
-        //         console.log('Drawing added');
-        //     }
-        //     this.isDrawing = false;
-        // }
     }
 
     onWheel($event: WheelEvent) {
-        console.log('Wheel event:', $event);
-
+        // console.log('Wheel event:', $event);
         if (!this.canvas) return;
 
-        this.canvas.handleWheel($event);
+        if ($event.ctrlKey) {
+            this.canvas.handleCtrlWheel($event);
+            return;
+        }
+
+        if ($event.shiftKey) {
+            // this.canvas.handleShiftWheel($event);
+            return;
+        }
+
+        // this.canvas.handleWheel($event);
     }
 
-    // @HostListener('window:scroll', ['$event'])
-    // onScroll($event: Event) {
-    //     // Handle scroll event here
-    //     console.log('Scroll event:', $event);
+    preventCtrlZoom($event: WheelEvent) {
+        if ($event.ctrlKey) {
+            $event.preventDefault();
+        }
+    }
+
+    // onClick($event: MouseEvent) {
+    // return;
+    // if (this.selectedTool === 'draw') return;
+    // this.handleMouseSelect();
     // }
-
-    onClick($event: MouseEvent) {
-        return;
-        // if (this.selectedTool === 'draw') return;
-        // this.handleMouseSelect();
-    }
 
     handleCursorModeSwitch() {
         // this.selectedTool = this.selectedTool === 'move' ? 'draw' : 'move';
@@ -334,7 +306,37 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
     }
 
     getSelectedTool(): SelectedTool {
-        return this.canvas?.getSelectedTool() || 'draw';
+        if (!this.canvas) return 'draw';
+
+        return this.canvas.getSelectedTool();
+    }
+
+    getZoomValue(): string {
+        if (!this.canvas) return '100%';
+
+        const zoomValue = parseFloat(this.canvas.getZoomValue()) * 100;
+        const roundedZoomValue = parseFloat(zoomValue.toFixed(2)); // Convert to number to remove trailing .00
+        const zoomString = roundedZoomValue + '%';
+
+        return zoomString;
+    }
+
+    resetCanvasScale() {
+        if (!this.canvas) return;
+
+        this.canvas.resetScale();
+    }
+
+    canvasZoomOut() {
+        if (!this.canvas) return;
+
+        this.canvas.zoomOut();
+    }
+
+    canvasZoomIn() {
+        if (!this.canvas) return;
+
+        this.canvas.zoomIn();
     }
 
     // TODO check if user is authorized to add to this canvas
@@ -434,15 +436,25 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
         await updateDoc(docRef, convertedDrawing);
     }
 
-    @HostListener('window:keydown.1', ['$event'])
-    changeCursorToDraw() {
-        // this.selectedTool = 'draw';
-    }
+    // @HostListener('window:keydown.1', ['$event'])
+    // handlePress1() {
+    //     this.onToolSelected('move');
+    // }
 
-    @HostListener('window:keydown.2', ['$event'])
-    changeCursorToMove() {
-        // this.selectedTool = 'move';
-    }
+    // @HostListener('window:keydown.2', ['$event'])
+    // handlePress2() {
+    //     this.onToolSelected('select');
+    // }
+
+    // @HostListener('window:keydown.3', ['$event'])
+    // handlePress3() {
+    //     this.onToolSelected('draw');
+    // }
+
+    // @HostListener('window:keydown.4', ['$event'])
+    // handlePress4() {
+    //     this.onToolSelected('eraser');
+    // }
 
     @HostListener('contextmenu', ['$event'])
     onRightClick($event: MouseEvent) {

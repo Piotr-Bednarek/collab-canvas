@@ -1,26 +1,12 @@
-<main>
+<main (wheel)="preventCtrlZoom($event)">
     <div class="top-bar">
         <div class="left-container">
             <a routerLink="/profile" routerLinkActive="active" ariaCurrentWhenActive="page">
                 <button mat-fab extended><mat-icon>arrow_back</mat-icon>Return to profile</button>
             </a>
         </div>
-        Selected tool: {{ getSelectedTool() }}
-        <!-- <button (click)="handleCursorModeSwitch()">SWITCH</button> -->
+        {{ getSelectedTool() }}
         <app-toolbar (toolSelected)="onToolSelected($event)"></app-toolbar>
-        <!-- <div class="tools">
-            <button (click)="selectTool('move')" mat-fab extended><mat-icon>open_with</mat-icon>Move</button>
-            <button (click)="selectTool('draw')" mat-fab extended><mat-icon>draw</mat-icon>Pencil</button>
-
-            <button (click)="selectTool('rectangle')" mat-fab><mat-icon>rectangle</mat-icon></button>
-            <button (click)="selectTool('circle')" mat-fab><mat-icon>circle</mat-icon></button>
-
-            <button (click)="selectTool('select')" mat-fab><mat-icon>select</mat-icon></button>
-            <button (click)="selectTool('text_field')" mat-fab><mat-icon>text_fields</mat-icon></button>
-            <button mat-fab><mat-icon>image</mat-icon></button>
-
-            <button mat-fab extended><mat-icon>download</mat-icon>Save to computer</button>
-        </div> -->
     </div>
     <div class="main-container">
         <div class="sidebar">
@@ -29,8 +15,18 @@
             <p>CONTRIBUTORS AND ROLES</p>
             <p>CANVAS SETTINGS</p>
             <p>CANVAS SIZE</p>
-            <p>ZOOM</p>
             <p>HELP BUTTON</p>
+            <div>
+                <div style="display: flex; gap: 0.25rem">
+                    <button mat-icon-button (click)="canvasZoomOut()">
+                        <mat-icon>remove</mat-icon>
+                    </button>
+                    <button mat-stroked-button (click)="resetCanvasScale()">{{ getZoomValue() }}</button>
+                    <button mat-icon-button (click)="canvasZoomIn()">
+                        <mat-icon>add</mat-icon>
+                    </button>
+                </div>
+            </div>
         </div>
         <div #wrapper class="canvas-wrapper">
             <canvas
@@ -39,7 +35,6 @@
                 (mousemove)="onMouseMove($event)"
                 (mousedown)="onMouseDown($event)"
                 (mouseup)="onMouseUp($event)"
-                (click)="onClick($event)"
                 (wheel)="onWheel($event)"
                 class="canvas"
             ></canvas>
