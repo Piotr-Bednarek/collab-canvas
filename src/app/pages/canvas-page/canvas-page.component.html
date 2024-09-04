@@ -5,7 +5,7 @@
                 <button mat-fab extended><mat-icon>arrow_back</mat-icon>Return to profile</button>
             </a>
         </div>
-        Selected tool: {{ selectedTool }}
+        Selected tool: {{ getSelectedTool() }}
         <!-- <button (click)="handleCursorModeSwitch()">SWITCH</button> -->
         <app-toolbar (toolSelected)="onToolSelected($event)"></app-toolbar>
         <!-- <div class="tools">
@@ -35,11 +35,12 @@
         <div #wrapper class="canvas-wrapper">
             <canvas
                 #canvas
-                [style.cursor]="selectedTool === 'draw' ? 'crosshair' : 'move'"
+                [style.cursor]="getSelectedTool() === 'draw' ? 'crosshair' : 'move'"
                 (mousemove)="onMouseMove($event)"
                 (mousedown)="onMouseDown($event)"
                 (mouseup)="onMouseUp($event)"
                 (click)="onClick($event)"
+                (wheel)="onWheel($event)"
                 class="canvas"
             ></canvas>
         </div>

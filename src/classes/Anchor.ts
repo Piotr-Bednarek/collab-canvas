@@ -1,4 +1,4 @@
-import { AnchorType } from '../app/interfaces';
+import { AnchorType } from '../app/interfaces/interfaces';
 
 class Anchor implements AnchorType {
     x: number;

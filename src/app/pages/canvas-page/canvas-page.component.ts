@@ -26,12 +26,13 @@ import {
 import { Subscription } from 'rxjs';
 import { Canvas } from '../../../classes/Canvas';
 import { FirebaseDrawing } from '../../firebase-drawing';
-import { Drawing } from '../../interfaces';
+import { Drawing } from '../../interfaces/interfaces';
 
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { ToolbarComponent } from '../../components/toolbar/toolbar.component';
+import { SelectedTool } from '../../interfaces/selected-tool';
 
 @Component({
     selector: 'app-canvas-page',
@@ -80,15 +81,16 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
     private lastMouseMoveEvent: MouseEvent | null = null;
     isThrottled: any;
 
-    private isDrawing: boolean = false;
-    private isMoving: boolean = false;
+    // private isDrawing: boolean = false;
+    // private isMoving: boolean = false;
 
-    selectedTool = 'move'; // 'draw' or 'move'
+    // selectedTool = 'move'; // 'draw' or 'move'
 
     lastAddedDrawingId: string | null = null;
 
     onToolSelected(tool: string): void {
-        this.selectedTool = tool;
+        // this.selectedTool = tool;
+        this.canvas?.setTool(tool as SelectedTool);
     }
 
     ngAfterViewInit(): void {
@@ -100,7 +102,13 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
         }
 
         this.adjustCanvasSize();
-        this.canvas = new Canvas([], this.canvasElementRef!, this.context!);
+        this.canvas = new Canvas(this.canvasElementRef!, this.context!);
+
+        // this.canvas = new Canvas(
+        //     drawings: [],
+        //     canvasElementRef: this.canvasElementRef!,
+        //     context: this.context!,
+        // );
 
         this.canvas.onDrawingComplete.subscribe((drawing: Drawing) => {
             let temporaryDrawing: FirebaseDrawing = {
@@ -186,6 +194,7 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
 
     onMouseMove($event: MouseEvent) {
         this.lastMouseMoveEvent = $event;
+
         if (!this.isThrottled) {
             this.isThrottled = true;
             window.requestAnimationFrame(() => {
@@ -198,55 +207,83 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
     private handleMouseMove($event: MouseEvent | null) {
         if (!$event) return;
 
-        this.handleMouseHoverCheck($event);
-        if (this.selectedTool === 'move') {
-            if (!this.isMoving) return;
+        if (!this.canvas) return;
 
-            this.canvas?.handleMouseMove($event.offsetX, $event.offsetY);
-        }
+        // console.log('Mouse move');
 
-        if (!this.isDrawing) return;
+        this.canvas.handleMouseMove($event);
 
-        this.canvas?.addPointToDrawing($event.offsetX, $event.offsetY);
+        // this.handleMouseHoverCheck($event);
+        // if (this.selectedTool === 'move') {
+        //     if (!this.isMoving) return;
 
-        this.canvas?.drawUnfinished();
+        //     this.canvas?.handleMoveStart($event.offsetX, $event.offsetY);
+        // }
+
+        // if (!this.isDrawing) return;
+
+        this.canvas.draw();
+
+        // this.canvas?.addPointToDrawing($event.offsetX, $event.offsetY);
     }
 
     onMouseDown($event: MouseEvent) {
         if (!this.canvas) return;
 
-        if (this.selectedTool === 'move') {
-            this.canvas.moveStart($event.offsetX, $event.offsetY);
+        this.canvas.handleMouseDown($event);
 
-            this.isMoving = true;
-            this.handleMouseHoverCheck($event);
-            this.handleMouseSelect();
-        } else if (this.selectedTool === 'draw') {
-            this.isDrawing = true;
-            this.canvas.handleDrawingSelect();
-        }
+        // if (this.selectedTool === 'move') {
+        //     this.canvas.moveStart($event.offsetX, $event.offsetY);
+
+        //     this.isMoving = true;
+        //     this.handleMouseHoverCheck($event);
+        //     this.handleMouseSelect();
+        // } else if (this.selectedTool === 'draw') {
+        //     this.isDrawing = true;
+        //     this.canvas.handleDrawingSelect();
+        // }
     }
 
     onMouseUp($event: MouseEvent) {
-        if (this.selectedTool === 'move') {
-            this.isMoving = false;
-            this.canvas?.handleMouseUp();
-        } else if (this.selectedTool === 'draw') {
-            if (this.canvas?.addDrawing()) {
-                console.log('Drawing added');
-            }
-            this.isDrawing = false;
-        }
+        if (!this.canvas) return;
+
+        // console.log('Mouse up');
+
+        this.canvas.handleMouseUp($event);
+
+        // if (this.selectedTool === 'move') {
+        //     this.isMoving = false;
+        //     this.canvas?.handleMouseUp();
+        // } else if (this.selectedTool === 'draw') {
+        //     if (this.canvas?.addDrawing()) {
+        //         console.log('Drawing added');
+        //     }
+        //     this.isDrawing = false;
+        // }
     }
 
-    onClick($event: MouseEvent) {
-        if (this.selectedTool === 'draw') return;
+    onWheel($event: WheelEvent) {
+        console.log('Wheel event:', $event);
 
-        this.handleMouseSelect();
+        if (!this.canvas) return;
+
+        this.canvas.handleWheel($event);
+    }
+
+    // @HostListener('window:scroll', ['$event'])
+    // onScroll($event: Event) {
+    //     // Handle scroll event here
+    //     console.log('Scroll event:', $event);
+    // }
+
+    onClick($event: MouseEvent) {
+        return;
+        // if (this.selectedTool === 'draw') return;
+        // this.handleMouseSelect();
     }
 
     handleCursorModeSwitch() {
-        this.selectedTool = this.selectedTool === 'move' ? 'draw' : 'move';
+        // this.selectedTool = this.selectedTool === 'move' ? 'draw' : 'move';
     }
 
     handleMouseHoverCheck($event: MouseEvent) {
@@ -293,7 +330,11 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
 
     selectTool(tool: string) {
         console.log('Selected tool:', tool);
-        this.selectedTool = tool;
+        // this.selectedTool = tool;
+    }
+
+    getSelectedTool(): SelectedTool {
+        return this.canvas?.getSelectedTool() || 'draw';
     }
 
     // TODO check if user is authorized to add to this canvas
@@ -395,12 +436,12 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
 
     @HostListener('window:keydown.1', ['$event'])
     changeCursorToDraw() {
-        this.selectedTool = 'draw';
+        // this.selectedTool = 'draw';
     }
 
     @HostListener('window:keydown.2', ['$event'])
     changeCursorToMove() {
-        this.selectedTool = 'move';
+        // this.selectedTool = 'move';
     }
 
     @HostListener('contextmenu', ['$event'])

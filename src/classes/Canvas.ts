@@ -1,22 +1,44 @@
-import { ElementRef, Inject } from '@angular/core';
+import { ElementRef, inject, Inject } from '@angular/core';
 import { Drawing } from './Drawing';
 import { Point } from './Point';
 
 import { EventEmitter, Injectable } from '@angular/core';
+import { Auth } from '@angular/fire/auth';
+import { Firestore } from '@angular/fire/firestore';
 import { FirebaseDrawing } from '../app/firebase-drawing';
+import { SelectedTool } from '../app/interfaces/selected-tool';
 
 @Injectable({
     providedIn: 'root',
 })
 class Canvas {
+    // private auth: Auth = inject(Auth);
+    // private firestore: Firestore = inject(Firestore);
+
     public onDrawingComplete: EventEmitter<Drawing> = new EventEmitter<Drawing>();
     public onDrawingUpdate: EventEmitter<Drawing> = new EventEmitter<Drawing>();
     public onClearSelect: EventEmitter<Drawing> = new EventEmitter<Drawing>();
 
+    //-----------------------------------
+
+    private skipCheck: boolean = false;
+
+    private selectedTool: SelectedTool = 'move';
+
+    private isMoving: boolean = false;
+    private isDrawing: boolean = false;
+    private isErasing: boolean = false;
+
+    private eraserTrail: Point[] = [];
+
+    private canvasScale: number = 1;
+
+    //-----------------------------------
+
     canvasElementRef: ElementRef | null = null;
     context: CanvasRenderingContext2D | null = null;
 
-    drawings: Drawing[];
+    drawings: Drawing[] = [];
     hoveredDrawing: Drawing | null = null;
     selectedDrawing: Drawing | null = null;
 
@@ -32,17 +54,173 @@ class Canvas {
 
     isMovingDrawing: boolean = false;
 
-    constructor(
-        @Inject(Drawing) drawings: Drawing[] = [],
-        canvasElementRef: ElementRef,
-        context: CanvasRenderingContext2D
-    ) {
-        this.drawings = drawings;
+    scaleOriginX: number = 0;
+    scaleOriginY: number = 0;
+
+    constructor(canvasElementRef: ElementRef, context: CanvasRenderingContext2D) {
         this.canvasElementRef = canvasElementRef;
         this.context = context;
     }
 
-    async addDrawing() {
+    setTool(tool: SelectedTool) {
+        this.selectedTool = tool;
+    }
+
+    handleWheel($event: WheelEvent) {
+        if (!this.context) return;
+        console.log('wheel');
+
+        let SCALE_BY = 1.03;
+        const MOUSE_X = $event.offsetX;
+        const MOUSE_Y = $event.offsetY;
+
+        if ($event.deltaY < 0) {
+            this.canvasScale *= SCALE_BY;
+        } else if ($event.deltaY > 0) {
+            SCALE_BY = 1 / SCALE_BY;
+            this.canvasScale *= SCALE_BY;
+        }
+
+        // Reduce the amount of movement
+        const dx = MOUSE_X - this.scaleOriginX;
+        const dy = MOUSE_Y - this.scaleOriginY;
+        this.scaleOriginX += dx * (1 - SCALE_BY);
+        this.scaleOriginY += dy * (1 - SCALE_BY);
+
+        this.draw();
+    }
+
+    handleMouseDown($event: MouseEvent) {
+        console.log('mouse down');
+
+        if (this.selectedTool === 'move') {
+            this.skipCheck = false;
+            console.log('move tool');
+            console.log('move tool');
+            console.log('move tool');
+            this.isMoving = true;
+
+            this.moveStart($event.offsetX, $event.offsetY);
+
+            this.handleDrawingSelect();
+
+            this.handleAnchorSelect();
+        }
+
+        if (this.selectedTool === 'draw') {
+            this.isDrawing = true;
+        }
+
+        if (this.selectedTool === 'erase') {
+            this.isErasing = true;
+        }
+    }
+
+    handleMouseMove($event: MouseEvent) {
+        this.checkHover($event.offsetX, $event.offsetY);
+
+        this.checkHoverAnchor($event.offsetX, $event.offsetY);
+
+        if (this.selectedDrawing) {
+            this.handleMoveStart($event.offsetX, $event.offsetY);
+            return;
+        }
+
+        if (this.isMoving) {
+            this.handleMovingCanvas($event.offsetX, $event.offsetY);
+            return;
+        }
+
+        if (this.isDrawing) {
+            this.addPointToDrawing($event.offsetX, $event.offsetY);
+            return;
+        }
+
+        if (this.isErasing) {
+            this.addPointToEraserTrail($event.offsetX, $event.offsetY);
+
+            this.handleErasing();
+        }
+
+        // if (this.selectedDrawing === this.hoveredDrawing) {
+        //     // this.selectedDrawing?.handleMouseMove($event.offsetX, $event.offsetY);
+        //     this.handleSelectedDrawingMouseMove($event.offsetX, $event.offsetY);
+        // }
+    }
+
+    handleMouseUp($event: MouseEvent) {
+        console.log('mouse up');
+
+        if (this.selectedTool === 'move') {
+            console.log('here');
+            this.isMoving = false;
+            this.clearSelected();
+        }
+
+        if (this.selectedTool === 'draw') {
+            this.isDrawing = false;
+            this.addDrawing();
+        }
+        if (this.selectedTool === 'erase') {
+            this.isErasing = false;
+
+            this.clearEraserTrail();
+        }
+    }
+
+    handleMovingCanvas(x: number, y: number) {
+        if (!this.context) return;
+
+        const dx = x - this.moveStartX;
+        const dy = y - this.moveStartY;
+
+        this.context.translate(dx, dy);
+
+        this.translateX -= dx;
+        this.translateY -= dy;
+
+        this.moveStart(x, y);
+
+        this.draw();
+    }
+
+    handleErasing() {
+        if (!this.hoveredDrawing) return;
+
+        console.log('erasing');
+
+        console.log(this.hoveredDrawing);
+
+        this.drawings = this.drawings.filter((drawing) => drawing !== this.hoveredDrawing);
+    }
+
+    handleMoveStart(x: number, y: number) {
+        if (!this.context) return;
+
+        const dx = x - this.moveStartX;
+        const dy = y - this.moveStartY;
+
+        // console.log(this.hoveredDrawing);
+
+        if (this.selectedDrawing) {
+            this.isMovingDrawing = true;
+            this.handleSelectedDrawingMouseMove(dx, dy);
+            // this.onDrawingUpdate.emit(this.selectedDrawing);
+
+            // console.log('translate');
+        } else if (!this.isMovingDrawing) {
+            this.context.translate(dx, dy);
+            this.translateX -= dx;
+            this.translateY -= dy;
+        }
+
+        this.moveStart(x, y);
+
+        this.draw();
+        // this.handleDrawingSelect();
+    }
+
+    addDrawing() {
         if (!this.drawing) return false;
 
         this.drawing.finish();
@@ -64,6 +242,16 @@ class Canvas {
         this.drawUnfinished();
     }
 
+    addPointToEraserTrail(x: number, y: number) {
+        this.eraserTrail.push(new Point(x + this.translateX, y + this.translateY));
+
+        let maxDistance = 8;
+
+        if (this.eraserTrail.length > maxDistance) {
+            this.eraserTrail.shift();
+        }
+    }
+
     // logDrawings() {
     //     for (const drawing of this.drawings) {
     //         drawing.logDrawing();
@@ -71,7 +259,7 @@ class Canvas {
     // }
 
     draw() {
-        this.clear();
+        this.clearAndScaleCanvas();
 
         this.drawGrid();
         this.drawUnfinished();
@@ -79,6 +267,8 @@ class Canvas {
         for (const drawing of this.drawings) {
             drawing.draw(this.context!, this.translateX, this.translateY);
         }
+
+        this.drawEraserTrail();
     }
 
     drawUnfinished() {
@@ -126,36 +316,74 @@ class Canvas {
         }
     }
 
+    clearAfterDrawingMove() {
+        if (this.selectedDrawing) {
+            this.selectedDrawing.clearSelectedAnchor();
+        }
+
+        this.selectedDrawing = null;
+
+        console.log('clear after drawing move');
+        console.log('clear after drawing move');
+        console.log('clear after drawing move');
+        console.log('clear after drawing move');
+    }
+
     clearSelected() {
-        // console.log('selected: ', this.selectedDrawing);
-        // console.log('hovered: ', this.hoveredDrawing);
+        console.log('-----------------------------------');
+        console.log('clear selected');
 
         if (!this.selectedDrawing) return;
 
-        if (this.selectedDrawing === this.hoveredDrawing) return;
+        // console.log(this.selectedDrawing.id);
+        // console.log(this.hoveredDrawing?.id);
 
-        this.onClearSelect.emit(this.selectedDrawing);
+        // this.onClearSelect.emit(this.selectedDrawing);
 
         // if (!this.selectedDrawing.isHovered) {
-        this.selectedDrawing.isSelected = false;
+
+        console.log('selected: ', this.selectedDrawing);
+
+        this.selectedDrawing.handleMouseUp();
+
         this.selectedDrawing.clearSelectedAnchor();
+
+        this.selectedDrawing.isSelected = false;
+
         this.selectedDrawing = null;
 
-        // }
+        this.isMovingDrawing = false;
 
-        // this.selectedDrawing.isSelected = false;
+        console.log('-----------------------------------');
+        console.log('selected: ', this.selectedDrawing);
+        console.log('selected: ', this.selectedDrawing);
+        console.log('-----------------------------------');
+        // console.log('clear selected');
+        // console.log('clear selected');
+        // console.log('clear selected');
+
+        this.skipCheck = true;
+    }
+
+    clearEraserTrail() {
+        this.eraserTrail = [];
     }
 
     checkHoverAnchor(x: number, y: number) {
-        if (!this.hoveredDrawing) return;
+        if (!this.selectedDrawing) return;
 
         x = x + this.translateX;
         y = y + this.translateY;
 
-        this.hoveredDrawing.checkHoverAnchor(x, y);
+        this.selectedDrawing.checkHoverAnchor(x, y);
     }
 
     handleDrawingSelect() {
+        if (this.skipCheck) {
+            this.skipCheck = false;
+            return;
+        }
+
         if (this.isMovingDrawing) return;
 
         if (!this.hoveredDrawing) {
@@ -166,24 +394,32 @@ class Canvas {
 
         this.hoveredDrawing.isSelected = true;
         this.selectedDrawing = this.hoveredDrawing;
+
+        console.log('selected drawing: ', this.selectedDrawing);
+        console.log('selected drawing: ', this.selectedDrawing);
+        console.log('selected drawing: ', this.selectedDrawing);
     }
 
     handleAnchorSelect() {
-        if (!this.hoveredDrawing) return;
+        if (!this.selectedDrawing) return;
+        console.log('anchor select');
 
-        this.hoveredDrawing.handleAnchorSelect();
+        this.selectedDrawing.handleAnchorSelect();
     }
 
     drawGrid() {
-        this.context!.lineWidth = 1;
+        if (!this.context) return;
+        if (!this.canvasElementRef) return;
 
-        const context = this.canvasElementRef!.nativeElement.getContext('2d');
-        const canvasWidth = this.canvasElementRef!.nativeElement.width;
-        const canvasHeight = this.canvasElementRef!.nativeElement.height;
+        this.context.lineWidth = 1;
+
+        const context = this.canvasElementRef.nativeElement.getContext('2d');
+        const canvasWidth = this.canvasElementRef.nativeElement.width;
+        const canvasHeight = this.canvasElementRef.nativeElement.height;
 
         if (!context) return;
 
-        this.context?.beginPath();
+        this.context.beginPath();
         for (let x = -this.translateX % this.gridSize; x < canvasWidth; x += this.gridSize) {
             context.moveTo(x, 0);
             context.lineTo(x, canvasHeight);
@@ -195,46 +431,55 @@ class Canvas {
         context.strokeStyle = '#ccc';
         context.stroke();
 
-        this.context?.beginPath();
-        this.context?.arc(0 - this.translateX, 0 - this.translateY, 5, 0, 2 * Math.PI);
+        this.context.beginPath();
+        this.context.arc(0 - this.translateX, 0 - this.translateY, 5, 0, 2 * Math.PI);
         context.fillStyle = 'black';
-        this.context?.fill();
+        this.context.fill();
     }
 
-    clear() {
-        this.context?.setTransform(1, 0, 0, 1, 0, 0);
-        this.context?.clearRect(
-            0,
-            0,
-            this.canvasElementRef!.nativeElement.width,
-            this.canvasElementRef!.nativeElement.height
-        );
-    }
+    drawEraserTrail() {
+        if (this.eraserTrail.length === 0) return;
 
-    handleMouseMove(x: number, y: number) {
         if (!this.context) return;
 
-        const dx = x - this.moveStartX;
-        const dy = y - this.moveStartY;
+        this.context.beginPath();
 
-        // console.log(this.hoveredDrawing);
+        this.context.moveTo(this.eraserTrail[0].x - this.translateX, this.eraserTrail[0].y - this.translateY);
 
-        if (this.selectedDrawing) {
-            this.isMovingDrawing = true;
-            this.handleSelectedDrawingMouseMove(dx, dy);
-            // this.onDrawingUpdate.emit(this.selectedDrawing);
+        this.context.lineCap = 'round';
+        this.context.strokeStyle = 'gray';
+        this.context.lineWidth = 6;
 
-            // console.log('translate');
-        } else if (!this.isMovingDrawing) {
-            this.context.translate(dx, dy);
-            this.translateX -= dx;
-            this.translateY -= dy;
+        for (let i = 1; i < this.eraserTrail.length; i++) {
+            this.context.lineTo(
+                this.eraserTrail[i].x - this.translateX,
+                this.eraserTrail[i].y - this.translateY
+            );
         }
 
-        this.moveStart(x, y);
+        this.context.stroke();
+    }
 
-        this.draw();
-        this.handleDrawingSelect();
+    clearAndScaleCanvas() {
+        if (!this.context) return;
+        if (!this.canvasElementRef) return;
+
+        this.context.setTransform(1, 0, 0, 1, 0, 0);
+        this.context.clearRect(
+            0,
+            0,
+            this.canvasElementRef.nativeElement.width,
+            this.canvasElementRef.nativeElement.height
+        );
+
+        this.context.setTransform(
+            this.canvasScale,
+            0,
+            0,
+            this.canvasScale,
+            this.scaleOriginX,
+            this.scaleOriginY
+        );
     }
 
     moveStart(x: number, y: number) {
@@ -252,14 +497,14 @@ class Canvas {
         this.draw();
     }
 
-    handleMouseUp() {
-        if (!this.selectedDrawing) return;
+    // handleMouseUpSecond() {
+    //     if (!this.selectedDrawing) return;
 
-        this.isMovingDrawing = false;
-        this.selectedDrawing.handleMouseUp();
+    //     this.isMovingDrawing = false;
+    //     this.selectedDrawing.handleMouseUp();
 
-        this.onDrawingUpdate.emit(this.selectedDrawing);
-    }
+    //     this.onDrawingUpdate.emit(this.selectedDrawing);
+    // }
 
     exportCanvas() {
         for (const drawing of this.drawings) {
@@ -295,6 +540,10 @@ class Canvas {
         this.drawings[drawingIndex].updateDrawingPoints(drawing.points);
 
         this.draw();
+    }
+
+    getSelectedTool(): SelectedTool {
+        return this.selectedTool;
     }
 }
 

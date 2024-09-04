@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { DrawingBounds } from '../app/interfaces';
+import { DrawingBounds } from '../app/interfaces/interfaces';
 import { Anchor } from './Anchor';
 import { Point } from './Point';
 
@@ -261,7 +261,7 @@ class Drawing implements Drawing {
     }
 
     checkHoverAnchor(x: number, y: number) {
-        if (this.selectedAnchor) return;
+        // if (this.selectedAnchor) return;
 
         this.hoveredAnchor = null;
 
