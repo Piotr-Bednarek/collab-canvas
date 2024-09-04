@@ -91,7 +91,7 @@ class Grid implements GridInterface {
             return;
         }
 
-        console.log('drawLines');
+        // console.log('drawLines');
 
         // const canvasWidth = this.canvasElementRef.nativeElement.width;
         // const canvasHeight = this.canvasElementRef.nativeElement.height;

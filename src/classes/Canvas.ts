@@ -1,5 +1,6 @@
 import { ElementRef, inject, Inject } from '@angular/core';
 import { Drawing } from './Drawing';
+import { Eraser } from './Eraser';
 import { Grid } from './Grid';
 import { Point } from './Point';
 
@@ -45,6 +46,7 @@ class Canvas {
     context: CanvasRenderingContext2D | null = null;
 
     grid: Grid | null = null;
+    eraser: Eraser | null = null;
 
     drawings: Drawing[] = [];
     hoveredDrawing: Drawing | null = null;
@@ -69,6 +71,8 @@ class Canvas {
         this.canvasElementRef = canvasElementRef;
         this.context = context;
         this.grid = new Grid('lines', 1, 'black', 0.2, this.gridSize);
+
+        this.eraser = new Eraser([]);
     }
 
     setTool(tool: SelectedTool) {
@@ -170,7 +174,11 @@ class Canvas {
         }
 
         if (this.isErasing) {
-            this.addPointToEraserTrail($event.offsetX, $event.offsetY);
+            // this.addPointToEraserTrail($event.offsetX, $event.offsetY);
+
+            this.eraser!.addPoint(
+                new Point($event.offsetX + this.translateX, $event.offsetY + this.translateY)
+            );
 
             this.handleErasing();
         }
@@ -220,7 +228,7 @@ class Canvas {
         if (this.selectedTool === 'erase') {
             this.isErasing = false;
 
-            this.clearEraserTrail();
+            this.eraser?.clearPoints();
         }
     }
 
@@ -321,15 +329,15 @@ class Canvas {
 
         this.drawUnfinished();
     }
-    addPointToEraserTrail(x: number, y: number) {
-        this.eraserTrail.push(new Point(x + this.translateX, y + this.translateY));
+    // addPointToEraserTrail(x: number, y: number) {
+    //     this.eraserTrail.push(new Point(x + this.translateX, y + this.translateY));
 
-        let maxDistance = 8;
+    //     let maxDistance = 8;
 
-        if (this.eraserTrail.length > maxDistance) {
-            this.eraserTrail.shift();
-        }
-    }
+    //     if (this.eraserTrail.length > maxDistance) {
+    //         this.eraserTrail.shift();
+    //     }
+    // }
 
     // logDrawings() {
     //     for (const drawing of this.drawings) {
@@ -355,7 +363,9 @@ class Canvas {
             drawing.draw(this.context!, this.translateX, this.translateY);
         }
 
-        this.drawEraserTrail();
+        // this.drawEraserTrail();
+
+        this.eraser?.draw(this.context!, this.translateX, this.translateY);
     }
 
     // drawGrid() {
@@ -505,10 +515,6 @@ class Canvas {
         this.skipCheck = true;
     }
 
-    clearEraserTrail() {
-        this.eraserTrail = [];
-    }
-
     handleDrawingSelect() {
         if (this.skipCheck) {
             this.skipCheck = false;
@@ -565,28 +571,28 @@ class Canvas {
     //     this.context.fill();
     // }
 
-    drawEraserTrail() {
-        if (this.eraserTrail.length === 0) return;
+    // drawEraserTrail() {
+    //     if (this.eraserTrail.length === 0) return;
 
-        if (!this.context) return;
+    //     if (!this.context) return;
 
-        this.context.beginPath();
+    //     this.context.beginPath();
 
-        this.context.moveTo(this.eraserTrail[0].x - this.translateX, this.eraserTrail[0].y - this.translateY);
+    //     this.context.moveTo(this.eraserTrail[0].x - this.translateX, this.eraserTrail[0].y - this.translateY);
 
-        this.context.lineCap = 'round';
-        this.context.strokeStyle = 'gray';
-        this.context.lineWidth = 6;
+    //     this.context.lineCap = 'round';
+    //     this.context.strokeStyle = 'gray';
+    //     this.context.lineWidth = 6;
 
-        for (let i = 1; i < this.eraserTrail.length; i++) {
-            this.context.lineTo(
-                this.eraserTrail[i].x - this.translateX,
-                this.eraserTrail[i].y - this.translateY
-            );
-        }
+    //     for (let i = 1; i < this.eraserTrail.length; i++) {
+    //         this.context.lineTo(
+    //             this.eraserTrail[i].x - this.translateX,
+    //             this.eraserTrail[i].y - this.translateY
+    //         );
+    //     }
 
-        this.context.stroke();
-    }
+    //     this.context.stroke();
+    // }
 
     clearAndScaleCanvas() {
         if (!this.context) return;
