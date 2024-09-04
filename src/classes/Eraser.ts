@@ -21,7 +21,6 @@ class Eraser implements EraserInterface {
             const startPoint = this.points[i - 1];
             const endPoint = this.points[i];
 
-            // Calculate the line width based on the position in the array
             const lineWidth = 6 * (i / this.points.length);
             ctx.imageSmoothingQuality = 'high';
             ctx.lineWidth = lineWidth;
@@ -29,7 +28,6 @@ class Eraser implements EraserInterface {
             ctx.beginPath();
             ctx.moveTo(startPoint.x - translateX, startPoint.y - translateY);
 
-            // Calculate the control point for the Bezier curve
             const controlPointX = (startPoint.x + endPoint.x) / 2 - translateX;
             const controlPointY = (startPoint.y + endPoint.y) / 2 - translateY;
 

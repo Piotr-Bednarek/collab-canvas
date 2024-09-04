@@ -21,7 +21,9 @@
                     <button mat-icon-button (click)="canvasZoomOut()">
                         <mat-icon>remove</mat-icon>
                     </button>
-                    <button mat-stroked-button (click)="resetCanvasScale()">{{ getZoomValue() }}</button>
+                    <button style="width: 5rem" mat-stroked-button (click)="resetCanvasScale()">
+                        {{ getZoomValue() }}
+                    </button>
                     <button mat-icon-button (click)="canvasZoomIn()">
                         <mat-icon>add</mat-icon>
                     </button>

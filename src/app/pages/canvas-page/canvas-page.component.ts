@@ -225,36 +225,15 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
     }
 
     onWheel($event: WheelEvent) {
-        // console.log('Wheel event:', $event);
         if (!this.canvas) return;
 
-        if ($event.ctrlKey) {
-            this.canvas.handleCtrlWheel($event);
-            return;
-        }
-
-        if ($event.shiftKey) {
-            // this.canvas.handleShiftWheel($event);
-            return;
-        }
-
-        // this.canvas.handleWheel($event);
+        this.canvas.handleWheel($event);
     }
 
     preventCtrlZoom($event: WheelEvent) {
         if ($event.ctrlKey) {
             $event.preventDefault();
         }
-    }
-
-    // onClick($event: MouseEvent) {
-    // return;
-    // if (this.selectedTool === 'draw') return;
-    // this.handleMouseSelect();
-    // }
-
-    handleCursorModeSwitch() {
-        // this.selectedTool = this.selectedTool === 'move' ? 'draw' : 'move';
     }
 
     handleMouseHoverCheck($event: MouseEvent) {

@@ -34,9 +34,11 @@ class Canvas {
     private canvasScale: number = 1;
 
     private canvasScaleMin: number = 0.2;
-    private canvasScaleMax: number = 4;
+    private canvasScaleMax: number = 30;
 
     private SCALE_BY = 1.05;
+
+    private WHEEL_PAN_SPEED = 30;
 
     //-----------------------------------
 
@@ -77,53 +79,22 @@ class Canvas {
         this.selectedTool = tool;
     }
 
-    handleCtrlWheel($event: WheelEvent) {
-        if (!this.context) return;
-
-        const mouseX = $event.offsetX;
-        const mouseY = $event.offsetY;
-
-        let scaleBy = this.SCALE_BY;
-        if ($event.deltaY > 0) {
-            scaleBy = 1 / this.SCALE_BY;
+    handleWheel($event: WheelEvent) {
+        if ($event.ctrlKey) {
+            this.handleCtrlWheel($event);
+        } else if ($event.shiftKey) {
+            this.handleShiftWheel($event);
+        } else {
+            this.handleWheelPan($event);
         }
-
-        this.calculateZoomValue(mouseX, mouseY, scaleBy);
-    }
-
-    calculateZoomValue(originX: number, originY: number, scaleBy: number) {
-        const dx = originX - this.scaleOriginX;
-        const dy = originY - this.scaleOriginY;
-
-        // Calculate the new scale
-        let newScale = this.canvasScale * scaleBy;
-
-        // Clamp the new scale between canvasScaleMin and canvasScaleMax
-        if (newScale < this.canvasScaleMin) {
-            newScale = this.canvasScaleMin;
-        } else if (newScale > this.canvasScaleMax) {
-            newScale = this.canvasScaleMax;
-        }
-
-        // Adjust the scale origin based on the clamped scale
-        this.scaleOriginX += dx * (1 - newScale / this.canvasScale);
-        this.scaleOriginY += dy * (1 - newScale / this.canvasScale);
-
-        // Update the canvas scale
-        this.canvasScale = newScale;
-
-        // Redraw the canvas
-        this.draw();
     }
 
     handleMouseDown($event: MouseEvent) {
-        console.log('mouse down');
+        // console.log('mouse down');
 
         if (this.selectedTool === 'move') {
             // this.skipCheck = false;
-            console.log('move tool');
-            console.log('move tool');
-            console.log('move tool');
+            // console.log('move tool');
             this.isMoving = true;
 
             this.moveStart($event.offsetX, $event.offsetY);
@@ -137,10 +108,12 @@ class Canvas {
             this.skipCheck = false;
 
             this.moveStart($event.offsetX, $event.offsetY);
-
             this.handleDrawingSelect();
-
             this.handleAnchorSelect();
+
+            if (this.selectedDrawing) {
+                this.isMovingDrawing = true;
+            }
         }
         if (this.selectedTool === 'draw') {
             this.isDrawing = true;
@@ -149,6 +122,8 @@ class Canvas {
         if (this.selectedTool === 'erase') {
             this.isErasing = true;
         }
+
+        this.draw();
     }
 
     handleMouseMove($event: MouseEvent) {
@@ -156,7 +131,7 @@ class Canvas {
 
         this.checkHoverAnchor($event.offsetX, $event.offsetY);
 
-        if (this.selectedDrawing) {
+        if (this.isMovingDrawing) {
             this.handleMoveStart($event.offsetX, $event.offsetY);
             return;
         }
@@ -175,6 +150,7 @@ class Canvas {
             this.addPointToEraser($event.offsetX, $event.offsetY);
 
             this.handleErasing();
+            return;
         }
     }
 
@@ -188,8 +164,13 @@ class Canvas {
         }
 
         if (this.selectedTool === 'select') {
-            this.isMoving = false;
-            this.clearSelected();
+            // this.isMoving = false;
+            // this.checkHover($event.offsetX, $event.offsetY);
+            // if (this.selectedDrawing === this.hoveredDrawing) return;
+            // this.clearSelected();
+            this.isMovingDrawing = false;
+
+            this.selectedDrawing?.handleMouseUp();
         }
 
         if (this.selectedTool === 'draw') {
@@ -240,20 +221,15 @@ class Canvas {
     handleMoveStart(x: number, y: number) {
         if (!this.context) return;
 
-        // const dx = (x - this.moveStartX * this.canvasScale) * this.canvasScale;
-        // const dy = (y - this.moveStartY * this.canvasScale) * this.canvasScale;
+        // console.log('here: ', this.selectedDrawing);
 
-        const dx = x - this.moveStartX * this.canvasScale;
-        const dy = y - this.moveStartY * this.canvasScale;
-
-        // console.log(this.hoveredDrawing);
+        const dx = (x - this.moveStartX) / this.canvasScale;
+        const dy = (y - this.moveStartY) / this.canvasScale;
 
         if (this.selectedDrawing) {
             this.isMovingDrawing = true;
             this.handleMouseMoveSelectedDrawing(dx, dy);
             // this.onDrawingUpdate.emit(this.selectedDrawing);
-
-            // console.log('translate');
         } else if (!this.isMovingDrawing) {
             this.context.translate(dx, dy);
             this.translateX -= dx;
@@ -263,7 +239,6 @@ class Canvas {
         this.moveStart(x, y);
 
         this.draw();
-        // this.handleDrawingSelect();
     }
 
     moveStart(x: number, y: number) {
@@ -293,7 +268,7 @@ class Canvas {
         const scaledY = (y - this.scaleOriginY) / this.canvasScale + this.translateY;
 
         // Debugging for transformed points
-        console.log('scaled x: ', scaledX, 'scaled y: ', scaledY);
+        // console.log('scaled x: ', scaledX, 'scaled y: ', scaledY);
 
         // Add the transformed point to the drawing
         this.drawing.addPoint(new Point(scaledX, scaledY));
@@ -443,15 +418,10 @@ class Canvas {
 
         this.hoveredDrawing.isSelected = true;
         this.selectedDrawing = this.hoveredDrawing;
-
-        console.log('selected drawing: ', this.selectedDrawing);
-        console.log('selected drawing: ', this.selectedDrawing);
-        console.log('selected drawing: ', this.selectedDrawing);
     }
 
     handleAnchorSelect() {
         if (!this.selectedDrawing) return;
-        console.log('anchor select');
 
         this.selectedDrawing.handleAnchorSelect();
     }
@@ -530,13 +500,70 @@ class Canvas {
     //     this.draw();
     // }
 
+    handleShiftWheel($event: WheelEvent) {
+        if (!this.context) return;
+
+        const dx = $event.deltaY < 0 ? this.WHEEL_PAN_SPEED : -this.WHEEL_PAN_SPEED;
+
+        this.translateX -= dx / this.canvasScale;
+
+        this.draw();
+    }
+
+    handleWheelPan($event: WheelEvent) {
+        if (!this.context) return;
+
+        const dy = $event.deltaY < 0 ? this.WHEEL_PAN_SPEED : -this.WHEEL_PAN_SPEED;
+
+        this.translateY -= dy / this.canvasScale;
+
+        this.draw();
+    }
+
+    handleCtrlWheel($event: WheelEvent) {
+        if (!this.context) return;
+
+        const mouseX = $event.offsetX;
+        const mouseY = $event.offsetY;
+
+        let scaleBy = this.SCALE_BY;
+        if ($event.deltaY > 0) {
+            scaleBy = 1 / this.SCALE_BY;
+        }
+
+        this.calculateZoomValue(mouseX, mouseY, scaleBy);
+    }
+
+    calculateZoomValue(originX: number, originY: number, scaleBy: number) {
+        const dx = originX - this.scaleOriginX;
+        const dy = originY - this.scaleOriginY;
+
+        // Calculate the new scale
+        let newScale = this.canvasScale * scaleBy;
+
+        // Clamp the new scale between canvasScaleMin and canvasScaleMax
+        if (newScale < this.canvasScaleMin) {
+            newScale = this.canvasScaleMin;
+        } else if (newScale > this.canvasScaleMax) {
+            newScale = this.canvasScaleMax;
+        }
+
+        // Adjust the scale origin based on the clamped scale
+        this.scaleOriginX += dx * (1 - newScale / this.canvasScale);
+        this.scaleOriginY += dy * (1 - newScale / this.canvasScale);
+
+        // Update the canvas scale
+        this.canvasScale = newScale;
+
+        // Redraw the canvas
+        this.draw();
+    }
+
     getSelectedTool(): SelectedTool {
         return this.selectedTool;
     }
 
     getZoomValue(): string {
-        // console.log('zoom value: ', this.canvasScale.toFixed(2));
-
         return this.canvasScale.toFixed(2);
     }
 
