@@ -571,29 +571,6 @@ class Canvas {
     //     this.context.fill();
     // }
 
-    // drawEraserTrail() {
-    //     if (this.eraserTrail.length === 0) return;
-
-    //     if (!this.context) return;
-
-    //     this.context.beginPath();
-
-    //     this.context.moveTo(this.eraserTrail[0].x - this.translateX, this.eraserTrail[0].y - this.translateY);
-
-    //     this.context.lineCap = 'round';
-    //     this.context.strokeStyle = 'gray';
-    //     this.context.lineWidth = 6;
-
-    //     for (let i = 1; i < this.eraserTrail.length; i++) {
-    //         this.context.lineTo(
-    //             this.eraserTrail[i].x - this.translateX,
-    //             this.eraserTrail[i].y - this.translateY
-    //         );
-    //     }
-
-    //     this.context.stroke();
-    // }
-
     clearAndScaleCanvas() {
         if (!this.context) return;
         if (!this.canvasElementRef) return;
