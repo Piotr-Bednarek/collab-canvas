@@ -182,30 +182,7 @@ class Canvas {
 
             this.handleErasing();
         }
-
-        // console.log(
-        //     'scale: ',
-        //     this.canvasScale,
-        //     'translateX: ',
-        //     this.translateX,
-        //     'translateY: ',
-        //     this.translateY
-        // );
-
-        // console.log('normal: ', $event.offsetX, $event.offsetY);
-        // console.log('scaled: ', x, y);
-
-        // if (this.selectedDrawing === this.hoveredDrawing) {
-        //     // this.selectedDrawing?.handleMouseMove($event.offsetX, $event.offsetY);
-        //     this.handleSelectedDrawingMouseMove($event.offsetX, $event.offsetY);
-        // }
     }
-
-    // getTransformedMousePosition(mouseX: number, mouseY: number): { x: number; y: number } {
-    //     const transformedX = (mouseX - this.translateX) / this.canvasScale;
-    //     const transformedY = (mouseY - this.translateY) / this.canvasScale;
-    //     return { x: transformedX, y: transformedY };
-    // }
 
     handleMouseUp($event: MouseEvent) {
         // console.log('mouse up');
@@ -329,21 +306,6 @@ class Canvas {
 
         this.drawUnfinished();
     }
-    // addPointToEraserTrail(x: number, y: number) {
-    //     this.eraserTrail.push(new Point(x + this.translateX, y + this.translateY));
-
-    //     let maxDistance = 8;
-
-    //     if (this.eraserTrail.length > maxDistance) {
-    //         this.eraserTrail.shift();
-    //     }
-    // }
-
-    // logDrawings() {
-    //     for (const drawing of this.drawings) {
-    //         drawing.logDrawing();
-    //     }
-    // }
 
     draw() {
         this.clearAndScaleCanvas();
@@ -356,67 +318,14 @@ class Canvas {
             this.scaleOriginY
         );
 
-        // this.drawGrid();
         this.drawUnfinished();
 
         for (const drawing of this.drawings) {
             drawing.draw(this.context!, this.translateX, this.translateY);
         }
 
-        // this.drawEraserTrail();
-
         this.eraser?.draw(this.context!, this.translateX, this.translateY);
     }
-
-    // drawGrid() {
-    //     if (!this.context) return;
-    //     if (!this.canvasElementRef) return;
-
-    //     this.context.lineWidth = 1;
-
-    //     const canvasWidth = this.canvasElementRef.nativeElement.width;
-    //     const canvasHeight = this.canvasElementRef.nativeElement.height;
-
-    //     const topLeftX = -this.scaleOriginX / this.canvasScale;
-    //     const topLeftY = -this.scaleOriginY / this.canvasScale;
-
-    //     const bottomRightX = (canvasWidth - this.scaleOriginX) / this.canvasScale;
-    //     const bottomRightY = (canvasHeight - this.scaleOriginY) / this.canvasScale;
-
-    //     const gridSpacing = this.gridSize * this.canvasScale;
-
-    //     this.context.beginPath();
-
-    //     //draw from the middleX to the left vertical line
-    //     for (let x = 0 - this.translateX; x > topLeftX; x -= gridSpacing) {
-    //         this.context.moveTo(x, topLeftY);
-    //         this.context.lineTo(x, bottomRightY);
-    //     }
-    //     //draw from the middleX to the right vertical line
-    //     for (let x = 0 - this.translateX + gridSpacing; x < bottomRightX; x += gridSpacing) {
-    //         this.context.moveTo(x, topLeftY);
-    //         this.context.lineTo(x, bottomRightY);
-    //     }
-    //     //draw from the middleY to the top horizontal line
-    //     for (let y = 0 - this.translateY; y > topLeftY; y -= gridSpacing) {
-    //         this.context.moveTo(topLeftX, y);
-    //         this.context.lineTo(bottomRightX, y);
-    //     }
-    //     //draw from the middleY to the bottom horizontal line
-    //     for (let y = 0 - this.translateY + gridSpacing; y < bottomRightY; y += gridSpacing) {
-    //         this.context.moveTo(topLeftX, y);
-    //         this.context.lineTo(bottomRightX, y);
-    //     }
-
-    //     this.context.strokeStyle = '#ccc';
-    //     // this.context.strokeStyle = 'black';
-    //     this.context.stroke();
-
-    //     this.context.beginPath();
-    //     this.context.arc(0 - this.translateX, 0 - this.translateY, 5, 0, 2 * Math.PI);
-    //     this.context.fillStyle = 'black';
-    //     this.context.fill();
-    // }
 
     drawUnfinished() {
         if (!this.drawing) return;
@@ -543,33 +452,6 @@ class Canvas {
 
         this.selectedDrawing.handleAnchorSelect();
     }
-
-    // logCoords() {
-    //     if (!this.canvasElementRef) return;
-
-    //     const canvasWidth = this.canvasElementRef.nativeElement.width;
-    //     const canvasHeight = this.canvasElementRef.nativeElement.height;
-
-    //     // The visible top-left corner is derived by factoring in the translation, scale, and scale origin
-    //     const topLeftX = (0 - this.scaleOriginX) / this.canvasScale + this.translateX;
-    //     const topLeftY = (0 - this.scaleOriginY) / this.canvasScale + this.translateY;
-
-    //     // The bottom-right corner is similarly calculated using the canvas width and height
-    //     const bottomRightX = (canvasWidth - this.scaleOriginX) / this.canvasScale + this.translateX;
-    //     const bottomRightY = (canvasHeight - this.scaleOriginY) / this.canvasScale + this.translateY;
-
-    //     // Log the results for debugging
-    //     console.log('Visible Top-Left (X, Y): ', topLeftX, topLeftY);
-    //     console.log('Visible Bottom-Right (X, Y): ', bottomRightX, bottomRightY);
-
-    //     //draw dots on the visible ends of the canvas
-    //     if (!this.context) return;
-    //     this.context.beginPath();
-    //     this.context.arc(topLeftX, topLeftY, 5, 0, 2 * Math.PI);
-    //     this.context.fillStyle = 'black';
-
-    //     this.context.fill();
-    // }
 
     clearAndScaleCanvas() {
         if (!this.context) return;

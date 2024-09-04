@@ -29,8 +29,6 @@ class Drawing implements Drawing {
     offsetX: number = 0;
     offsetY: number = 0;
 
-    // scalingThreshold: number = 0.1;
-
     isScalingDrawing: boolean = false;
 
     translateX: number = 0;
@@ -212,9 +210,25 @@ class Drawing implements Drawing {
 
         ctx.beginPath();
         ctx.moveTo(this.points[0].x - translateX, this.points[0].y - translateY);
-        for (let i = 1; i < this.points.length; i++) {
-            ctx.lineTo(this.points[i].x - translateX, this.points[i].y - translateY);
+
+        for (let i = 1; i < this.points.length - 1; i++) {
+            const currentPoint = this.points[i];
+            const nextPoint = this.points[i + 1];
+
+            const controlPointX = (currentPoint.x + nextPoint.x) / 2 - translateX;
+            const controlPointY = (currentPoint.y + nextPoint.y) / 2 - translateY;
+
+            ctx.quadraticCurveTo(
+                currentPoint.x - translateX,
+                currentPoint.y - translateY,
+                controlPointX,
+                controlPointY
+            );
         }
+
+        const lastPoint = this.points[this.points.length - 1];
+        ctx.lineTo(lastPoint.x - translateX, lastPoint.y - translateY);
+
         ctx.stroke();
 
         if (this.isFinished) {
