@@ -17,9 +17,9 @@ class Canvas {
     // private auth: Auth = inject(Auth);
     // private firestore: Firestore = inject(Firestore);
 
-    public onDrawingComplete: EventEmitter<Drawing> = new EventEmitter<Drawing>();
-    public onDrawingUpdate: EventEmitter<Drawing> = new EventEmitter<Drawing>();
-    public onClearSelect: EventEmitter<Drawing> = new EventEmitter<Drawing>();
+    // public onDrawingComplete: EventEmitter<Drawing> = new EventEmitter<Drawing>();
+    // public onDrawingUpdate: EventEmitter<Drawing> = new EventEmitter<Drawing>();
+    // public onClearSelect: EventEmitter<Drawing> = new EventEmitter<Drawing>();
 
     //-----------------------------------
 
@@ -30,8 +30,6 @@ class Canvas {
     private isMoving: boolean = false;
     private isDrawing: boolean = false;
     private isErasing: boolean = false;
-
-    private eraserTrail: Point[] = [];
 
     private canvasScale: number = 1;
 
@@ -174,11 +172,7 @@ class Canvas {
         }
 
         if (this.isErasing) {
-            // this.addPointToEraserTrail($event.offsetX, $event.offsetY);
-
-            this.eraser!.addPoint(
-                new Point($event.offsetX + this.translateX, $event.offsetY + this.translateY)
-            );
+            this.addPointToEraser($event.offsetX, $event.offsetY);
 
             this.handleErasing();
         }
@@ -256,7 +250,7 @@ class Canvas {
 
         if (this.selectedDrawing) {
             this.isMovingDrawing = true;
-            this.handleSelectedDrawingMouseMove(dx, dy);
+            this.handleMouseMoveSelectedDrawing(dx, dy);
             // this.onDrawingUpdate.emit(this.selectedDrawing);
 
             // console.log('translate');
@@ -283,7 +277,7 @@ class Canvas {
         this.drawing.finish();
         this.drawings.push(this.drawing!);
 
-        this.onDrawingComplete.emit(this.drawing);
+        // this.onDrawingComplete.emit(this.drawing);
 
         this.drawing = null;
         return true;
@@ -305,6 +299,15 @@ class Canvas {
         this.drawing.addPoint(new Point(scaledX, scaledY));
 
         this.drawUnfinished();
+    }
+
+    addPointToEraser(x: number, y: number) {
+        if (!this.eraser) return;
+
+        const scaledX = (x - this.scaleOriginX) / this.canvasScale + this.translateX;
+        const scaledY = (y - this.scaleOriginY) / this.canvasScale + this.translateY;
+
+        this.eraser.addPoint(new Point(scaledX, scaledY));
     }
 
     draw() {
@@ -475,11 +478,8 @@ class Canvas {
         );
     }
 
-    handleSelectedDrawingMouseMove(x: number, y: number) {
+    handleMouseMoveSelectedDrawing(x: number, y: number) {
         if (!this.selectedDrawing) return;
-
-        // console.log('move selected drawing');
-        // console.log('x: ', x, 'y: ', y);
 
         this.selectedDrawing.handleMouseMove(x, y);
         this.draw();
@@ -491,7 +491,7 @@ class Canvas {
     //     this.isMovingDrawing = false;
     //     this.selectedDrawing.handleMouseUp();
 
-    //     this.onDrawingUpdate.emit(this.selectedDrawing);
+    //     // this.onDrawingUpdate.emit(this.selectedDrawing);
     // }
 
     exportCanvas() {
@@ -500,35 +500,35 @@ class Canvas {
         }
     }
 
-    handleFirebaseDrawing(drawing: FirebaseDrawing) {
-        console.log('Adding drawing from firebase');
+    // handleFirebaseDrawing(drawing: FirebaseDrawing) {
+    //     console.log('Adding drawing from firebase');
 
-        let newDrawing = new Drawing(drawing.id);
+    //     let newDrawing = new Drawing(drawing.id);
 
-        for (const point of drawing.points) {
-            newDrawing.addPoint(new Point(point.x, point.y));
-        }
+    //     for (const point of drawing.points) {
+    //         newDrawing.addPoint(new Point(point.x, point.y));
+    //     }
 
-        newDrawing.finish();
+    //     newDrawing.finish();
 
-        this.drawings.push(newDrawing);
-    }
+    //     this.drawings.push(newDrawing);
+    // }
 
-    updateDrawing(drawing: FirebaseDrawing) {
-        console.log('id: ', drawing.id);
+    // updateDrawing(drawing: FirebaseDrawing) {
+    //     console.log('id: ', drawing.id);
 
-        const drawingIndex = this.drawings.findIndex((d) => d.id === drawing.id);
+    //     const drawingIndex = this.drawings.findIndex((d) => d.id === drawing.id);
 
-        if (drawingIndex === -1) {
-            console.error('Drawing not found');
-            return;
-        }
+    //     if (drawingIndex === -1) {
+    //         console.error('Drawing not found');
+    //         return;
+    //     }
 
-        console.log('Drawing found');
-        this.drawings[drawingIndex].updateDrawingPoints(drawing.points);
+    //     console.log('Drawing found');
+    //     this.drawings[drawingIndex].updateDrawingPoints(drawing.points);
 
-        this.draw();
-    }
+    //     this.draw();
+    // }
 
     getSelectedTool(): SelectedTool {
         return this.selectedTool;

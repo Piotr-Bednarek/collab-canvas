@@ -43,13 +43,13 @@ import { SelectedTool } from '../../interfaces/selected-tool';
 })
 export class CanvasPageComponent implements AfterViewInit, OnDestroy {
     private auth: Auth = inject(Auth);
-    private firestore: Firestore = inject(Firestore);
+    // private firestore: Firestore = inject(Firestore);
 
     user$ = user(this.auth);
     userSubscription: Subscription;
     user: User | null = null;
 
-    drawingSubscription: Unsubscribe;
+    // drawingSubscription: Unsubscribe;
 
     constructor(private route: ActivatedRoute) {
         this.userSubscription = this.user$.subscribe((aUser: User | null) => {
@@ -62,7 +62,7 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
             }
         });
 
-        this.drawingSubscription = () => {};
+        // this.drawingSubscription = () => {};
 
         // const canvasCollection = collection(this.firestore, 'canvases', this.canvasId);
 
@@ -89,7 +89,6 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
     lastAddedDrawingId: string | null = null;
 
     onToolSelected(tool: string): void {
-        // this.selectedTool = tool;
         this.canvas?.setTool(tool as SelectedTool);
     }
 
@@ -110,78 +109,78 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
         //     context: this.context!,
         // );
 
-        this.canvas.onDrawingComplete.subscribe((drawing: Drawing) => {
-            let temporaryDrawing: FirebaseDrawing = {
-                id: drawing.id,
-                selectedBy: null,
-                points: drawing.points,
-            };
+        // this.canvas.onDrawingComplete.subscribe((drawing: Drawing) => {
+        //     let temporaryDrawing: FirebaseDrawing = {
+        //         id: drawing.id,
+        //         selectedBy: null,
+        //         points: drawing.points,
+        //     };
 
-            this.lastAddedDrawingId = temporaryDrawing.id;
+        //     this.lastAddedDrawingId = temporaryDrawing.id;
 
-            console.log('Drawing complete:', temporaryDrawing);
-            this.addToFirebase(temporaryDrawing);
-        });
+        //     console.log('Drawing complete:', temporaryDrawing);
+        //     this.addToFirebase(temporaryDrawing);
+        // });
 
-        this.canvas.onDrawingUpdate.subscribe((selectedDrawing: Drawing) => {
-            let temporaryDrawing: FirebaseDrawing = {
-                id: selectedDrawing.id,
-                selectedBy: this.user?.uid || null,
-                points: selectedDrawing.points,
-            };
+        // this.canvas.onDrawingUpdate.subscribe((selectedDrawing: Drawing) => {
+        //     let temporaryDrawing: FirebaseDrawing = {
+        //         id: selectedDrawing.id,
+        //         selectedBy: this.user?.uid || null,
+        //         points: selectedDrawing.points,
+        //     };
 
-            console.log('Drawing updated:', temporaryDrawing);
-            this.updateFirebaseDrawing(temporaryDrawing);
-        });
+        //     console.log('Drawing updated:', temporaryDrawing);
+        //     this.updateFirebaseDrawing(temporaryDrawing);
+        // });
 
-        this.canvas.onClearSelect.subscribe((selectedDrawing: Drawing) => {
-            let temporaryDrawing: FirebaseDrawing = {
-                id: selectedDrawing.id,
-                selectedBy: null,
-                points: selectedDrawing.points,
-            };
+        // this.canvas.onClearSelect.subscribe((selectedDrawing: Drawing) => {
+        //     let temporaryDrawing: FirebaseDrawing = {
+        //         id: selectedDrawing.id,
+        //         selectedBy: null,
+        //         points: selectedDrawing.points,
+        //     };
 
-            console.log('SelectedBy cleared:', temporaryDrawing);
-            this.updateFirebaseDrawing(temporaryDrawing);
-        });
+        //     console.log('SelectedBy cleared:', temporaryDrawing);
+        //     this.updateFirebaseDrawing(temporaryDrawing);
+        // });
 
-        this.drawingSubscription = onSnapshot(
-            collection(this.firestore, `canvases/${this.canvasId}/drawings`),
-            (snapshot) => {
-                snapshot.docChanges().forEach((change) => {
-                    // console.log('Change:', change);
-                    if (change.type === 'added') {
-                        console.log('New drawing: ', change.doc.data());
-                        this.fetchDrawingFromFirebase(change.doc.id);
-                    }
-                    if (change.type === 'modified') {
-                        console.log('Modified drawing: ', change.doc.data());
+        // this.drawingSubscription = onSnapshot(
+        //     collection(this.firestore, `canvases/${this.canvasId}/drawings`),
+        //     (snapshot) => {
+        //         snapshot.docChanges().forEach((change) => {
+        //             // console.log('Change:', change);
+        //             if (change.type === 'added') {
+        //                 console.log('New drawing: ', change.doc.data());
+        //                 this.fetchDrawingFromFirebase(change.doc.id);
+        //             }
+        //             if (change.type === 'modified') {
+        //                 console.log('Modified drawing: ', change.doc.data());
 
-                        this.handleDrawingUpdate(change.doc.data() as FirebaseDrawing);
-                        // Handle the modified drawing
-                    }
-                    // if (change.type === 'removed') {
-                    //     console.log('Removed drawing: ', change.doc.data());
-                    //     // Handle the removed drawing
-                    // }
-                });
-            },
-            (error) => {
-                console.error('Error in snapshot listener:', error);
-            }
-        );
+        //                 this.handleDrawingUpdate(change.doc.data() as FirebaseDrawing);
+        //                 // Handle the modified drawing
+        //             }
+        //             // if (change.type === 'removed') {
+        //             //     console.log('Removed drawing: ', change.doc.data());
+        //             //     // Handle the removed drawing
+        //             // }
+        //         });
+        //     },
+        //     (error) => {
+        //         console.error('Error in snapshot listener:', error);
+        //     }
+        // );
     }
 
     ngOnDestroy(): void {
         this.userSubscription.unsubscribe();
-        this.drawingSubscription();
+        // this.drawingSubscription();
     }
 
-    handleDrawingUpdate(drawing: FirebaseDrawing) {
-        console.log('Updating drawing...');
+    // handleDrawingUpdate(drawing: FirebaseDrawing) {
+    //     console.log('Updating drawing...');
 
-        this.canvas?.updateDrawing(drawing);
-    }
+    //     // this.canvas?.updateDrawing(drawing);
+    // }
 
     // fetchCanvas() {
     //     console.log('Fetching canvas...');
@@ -340,101 +339,101 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
     }
 
     // TODO check if user is authorized to add to this canvas
-    async addToFirebase(drawing: FirebaseDrawing) {
-        if (!this.user) {
-            console.log('Cannot add new drawing to canvas, no user logged in.');
-            return;
-        }
+    // async addToFirebase(drawing: FirebaseDrawing) {
+    //     if (!this.user) {
+    //         console.log('Cannot add new drawing to canvas, no user logged in.');
+    //         return;
+    //     }
 
-        console.log('Adding to Firebase...');
+    //     console.log('Adding to Firebase...');
 
-        const canvasCollection = collection(this.firestore, `canvases/${this.canvasId}/drawings`);
+    //     const canvasCollection = collection(this.firestore, `canvases/${this.canvasId}/drawings`);
 
-        const convertedDrawing = {
-            ...drawing,
-            points: drawing.points.map((point) => ({ x: point.x, y: point.y })),
-        };
+    //     const convertedDrawing = {
+    //         ...drawing,
+    //         points: drawing.points.map((point) => ({ x: point.x, y: point.y })),
+    //     };
 
-        await setDoc(doc(canvasCollection, drawing.id), convertedDrawing);
+    //     await setDoc(doc(canvasCollection, drawing.id), convertedDrawing);
 
-        // console.log('Drawing added to Firebase:', docRef.id);
-    }
+    //     // console.log('Drawing added to Firebase:', docRef.id);
+    // }
 
-    async fetchFromFirebase() {
-        if (!this.user) {
-            console.log('Cannot fetch drawings from canvas, no user logged in.');
-            return;
-        }
+    // async fetchFromFirebase() {
+    //     if (!this.user) {
+    //         console.log('Cannot fetch drawings from canvas, no user logged in.');
+    //         return;
+    //     }
 
-        const canvasCollection = collection(this.firestore, `/canvases/${this.canvasId}/drawings`);
+    //     const canvasCollection = collection(this.firestore, `/canvases/${this.canvasId}/drawings`);
 
-        const querySnapshot = await getDocs(canvasCollection);
-        querySnapshot.forEach((doc) => {
-            // console.log(doc.id, ' => ', doc.data());
-            this.canvas?.handleFirebaseDrawing(doc.data() as FirebaseDrawing);
-        });
+    //     const querySnapshot = await getDocs(canvasCollection);
+    //     querySnapshot.forEach((doc) => {
+    //         // console.log(doc.id, ' => ', doc.data());
+    //         this.canvas?.handleFirebaseDrawing(doc.data() as FirebaseDrawing);
+    //     });
 
-        this.canvas?.draw();
-    }
+    //     this.canvas?.draw();
+    // }
 
-    async fetchDrawingFromFirebase(drawingId: string) {
-        if (!this.user) {
-            console.log('Cannot fetch drawing from canvas, no user logged in.');
-            return;
-        }
+    // async fetchDrawingFromFirebase(drawingId: string) {
+    //     if (!this.user) {
+    //         console.log('Cannot fetch drawing from canvas, no user logged in.');
+    //         return;
+    //     }
 
-        if (drawingId === this.lastAddedDrawingId) return;
+    //     if (drawingId === this.lastAddedDrawingId) return;
 
-        const canvasCollection = collection(this.firestore, `/canvases/${this.canvasId}/drawings`);
+    //     const canvasCollection = collection(this.firestore, `/canvases/${this.canvasId}/drawings`);
 
-        await getDoc(doc(canvasCollection, drawingId)).then((doc) => {
-            this.canvas?.handleFirebaseDrawing(doc.data() as FirebaseDrawing);
-        });
+    //     await getDoc(doc(canvasCollection, drawingId)).then((doc) => {
+    //         this.canvas?.handleFirebaseDrawing(doc.data() as FirebaseDrawing);
+    //     });
 
-        // const querySnapshot = await getDocs(canvasCollection);
-        // querySnapshot.forEach((doc) => {
-        //     if (doc.id !== drawingId) return;
-        // });
+    //     // const querySnapshot = await getDocs(canvasCollection);
+    //     // querySnapshot.forEach((doc) => {
+    //     //     if (doc.id !== drawingId) return;
+    //     // });
 
-        this.canvas?.draw();
-    }
+    //     this.canvas?.draw();
+    // }
 
-    async updateFirebaseDrawing(drawing: FirebaseDrawing) {
-        if (!this.user) {
-            console.log('Cannot update drawing in canvas, no user logged in.');
-            return;
-        }
+    // async updateFirebaseDrawing(drawing: FirebaseDrawing) {
+    //     if (!this.user) {
+    //         console.log('Cannot update drawing in canvas, no user logged in.');
+    //         return;
+    //     }
 
-        // const canvasCollection = collection(
-        //     this.firestore,
-        //     `users/${this.user.uid}/canvases/${this.canvasId}/drawings`
-        // );
+    //     // const canvasCollection = collection(
+    //     //     this.firestore,
+    //     //     `users/${this.user.uid}/canvases/${this.canvasId}/drawings`
+    //     // );
 
-        const docRef = doc(this.firestore, `/canvases/${this.canvasId}/drawings/${drawing.id}`);
+    //     const docRef = doc(this.firestore, `/canvases/${this.canvasId}/drawings/${drawing.id}`);
 
-        // const docRef = doc(canvasCollection, drawing.id);
+    //     // const docRef = doc(canvasCollection, drawing.id);
 
-        // Check if the document exists before updating
-        const docSnap = await getDoc(docRef).catch((error) =>
-            console.error('Error getting document:', error)
-        );
+    //     // Check if the document exists before updating
+    //     const docSnap = await getDoc(docRef).catch((error) =>
+    //         console.error('Error getting document:', error)
+    //     );
 
-        // console.log('Document data:', docSnap.data());
-        // if (!docSnap.exists()) {
-        // console.log('Document does not exist, cannot update.');
-        // Optionally, create the document here if it should exist
-        // await setDoc(docRef, convertedDrawing, { merge: true });
-        // return;
-        // }
+    //     // console.log('Document data:', docSnap.data());
+    //     // if (!docSnap.exists()) {
+    //     // console.log('Document does not exist, cannot update.');
+    //     // Optionally, create the document here if it should exist
+    //     // await setDoc(docRef, convertedDrawing, { merge: true });
+    //     // return;
+    //     // }
 
-        const convertedDrawing = {
-            id: drawing.id,
-            selectedBy: drawing.selectedBy,
-            points: drawing.points.map((point) => ({ x: point.x, y: point.y })),
-        };
+    //     const convertedDrawing = {
+    //         id: drawing.id,
+    //         selectedBy: drawing.selectedBy,
+    //         points: drawing.points.map((point) => ({ x: point.x, y: point.y })),
+    //     };
 
-        await updateDoc(docRef, convertedDrawing);
-    }
+    //     await updateDoc(docRef, convertedDrawing);
+    // }
 
     // @HostListener('window:keydown.1', ['$event'])
     // handlePress1() {
