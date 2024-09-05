@@ -18,17 +18,38 @@ import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatToolbar } from '@angular/material/toolbar';
 import { Canvases, CanvasItem } from '../../interfaces/canvases';
 
+import {
+    MAT_DIALOG_DATA,
+    MatDialog,
+    MatDialogActions,
+    MatDialogClose,
+    MatDialogContent,
+    MatDialogRef,
+    MatDialogTitle,
+} from '@angular/material/dialog';
+import { CanvasRemoveDialogComponent } from '../../components/canvas-remove-dialog/canvas-remove-dialog.component';
 @Component({
     selector: 'app-user-profile-page',
     standalone: true,
-    imports: [CommonModule, MatToolbar, MatCardModule, RouterModule, MatIconModule, MatButtonModule],
+    imports: [
+        CommonModule,
+        MatToolbar,
+        MatCardModule,
+        RouterModule,
+        MatIconModule,
+        MatButtonModule,
+        MatProgressSpinnerModule,
+    ],
     templateUrl: './user-profile-page.component.html',
     styleUrl: './user-profile-page.component.scss',
 })
 export class UserProfilePageComponent implements OnDestroy {
+    readonly dialog = inject(MatDialog);
+
     private auth: Auth = inject(Auth);
     private firestore: Firestore = inject(Firestore);
 
@@ -52,7 +73,9 @@ export class UserProfilePageComponent implements OnDestroy {
             }
         });
 
+        // this.canvases$ = new Observable<Canvases>();
         this.canvases$ = this.canvasesSource.asObservable();
+
         this.canvasesSubscription = this.canvases$.subscribe();
     }
 
@@ -125,9 +148,21 @@ export class UserProfilePageComponent implements OnDestroy {
         return `${day}/${month}/${year}`;
     }
 
-    async deleteCanvas(canvasId: string, event: MouseEvent) {
+    handleCanvasDeleteDialog(canvasId: string, event: MouseEvent) {
         event.stopPropagation();
 
+        const dialogRef = this.dialog.open(CanvasRemoveDialogComponent);
+
+        dialogRef.afterClosed().subscribe((result) => {
+            console.log('The dialog was closed:', result);
+
+            if (result === 'delete') {
+                this.handleCanvasDelete(canvasId);
+            }
+        });
+    }
+
+    async handleCanvasDelete(canvasId: string) {
         if (!this.user) {
             console.log('Cannot delete canvas, no user logged in.');
             return;

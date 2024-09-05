@@ -137,12 +137,27 @@ mat-card-header {
     text-decoration: none;
 }
 
+// .container-wrapper {
+//     display: flex;
+//     flex-direction: column;
+//     gap: 1rem;
+//     padding: 1rem;
+//     background-color: red;
+// }
+
 .canvases-container {
     display: flex;
     flex-direction: column;
 
     gap: 1rem;
     padding: 1rem 1rem;
+}
+
+.loading {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .canvas-controls {
