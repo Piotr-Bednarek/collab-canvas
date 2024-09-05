@@ -3,85 +3,36 @@
         thickness: {{ thicknesses[selectedThicknessIndex] }}px <br />
         color: {{ colors[selectedColorIndex] }} <br />
         <div class="pen-size">
-            <ng-container *ngIf="selectedThicknessIndex != 0; else pen0">
-                <button mat-mini-fab matTooltip="{{ thicknesses[0] }}px" (click)="onThicknessChange(0)">
-                    <mat-icon svgIcon="pen-size-1" aria-hidden="false"></mat-icon>
-                </button>
-            </ng-container>
-            <ng-template #pen0>
-                <button
-                    mat-mini-fab
-                    disabled
-                    matTooltip="{{ thicknesses[0] }}px"
-                    (click)="onThicknessChange(0)"
-                >
-                    <mat-icon svgIcon="pen-size-1" aria-hidden="false"></mat-icon>
-                </button>
-            </ng-template>
-
-            <ng-container *ngIf="selectedThicknessIndex != 1; else pen1">
-                <button mat-mini-fab matTooltip="{{ thicknesses[1] }}px" (click)="onThicknessChange(1)">
-                    <mat-icon svgIcon="pen-size-2" aria-hidden="false"></mat-icon>
-                </button>
-            </ng-container>
-            <ng-template #pen1>
-                <button
-                    mat-mini-fab
-                    disabled
-                    matTooltip="{{ thicknesses[1] }}px"
-                    (click)="onThicknessChange(1)"
-                >
-                    <mat-icon svgIcon="pen-size-2" aria-hidden="false"></mat-icon>
-                </button>
-            </ng-template>
-
-            <ng-container *ngIf="selectedThicknessIndex != 2; else pen2">
-                <button mat-mini-fab matTooltip="{{ thicknesses[2] }}px" (click)="onThicknessChange(2)">
-                    <mat-icon svgIcon="pen-size-3" aria-hidden="false"></mat-icon>
-                </button>
-            </ng-container>
-            <ng-template #pen2>
-                <button
-                    mat-mini-fab
-                    disabled
-                    matTooltip="{{ thicknesses[2] }}px"
-                    (click)="onThicknessChange(2)"
-                >
-                    <mat-icon svgIcon="pen-size-3" aria-hidden="false"></mat-icon>
-                </button>
-            </ng-template>
-
-            <ng-container *ngIf="selectedThicknessIndex != 3; else pen3">
-                <button mat-mini-fab matTooltip="{{ thicknesses[3] }}px" (click)="onThicknessChange(3)">
-                    <mat-icon svgIcon="pen-size-4" aria-hidden="false"></mat-icon>
-                </button>
-            </ng-container>
-            <ng-template #pen3>
-                <button
-                    mat-mini-fab
-                    disabled
-                    matTooltip="{{ thicknesses[3] }}px"
-                    (click)="onThicknessChange(3)"
-                >
-                    <mat-icon svgIcon="pen-size-4" aria-hidden="false"></mat-icon>
-                </button>
-            </ng-template>
-
-            <ng-container *ngIf="selectedThicknessIndex != 4; else pen4">
-                <button mat-mini-fab matTooltip="{{ thicknesses[4] }}px" (click)="onThicknessChange(4)">
-                    <mat-icon svgIcon="pen-size-5" aria-hidden="false"></mat-icon>
-                </button>
-            </ng-container>
-            <ng-template #pen4>
-                <button
-                    mat-mini-fab
-                    disabled
-                    matTooltip="{{ thicknesses[4] }}px"
-                    (click)="onThicknessChange(4)"
-                >
-                    <mat-icon svgIcon="pen-size-5" aria-hidden="false"></mat-icon>
-                </button>
-            </ng-template>
+            <app-thickness-button
+                [thickness]="thicknesses[0]"
+                [isSelected]="selectedThicknessIndex != 0"
+                [icon]="iconNames[0]"
+                (thicknessSelected)="onThicknessChange(0)"
+            ></app-thickness-button>
+            <app-thickness-button
+                [thickness]="thicknesses[1]"
+                [isSelected]="selectedThicknessIndex != 1"
+                [icon]="iconNames[1]"
+                (thicknessSelected)="onThicknessChange(1)"
+            ></app-thickness-button>
+            <app-thickness-button
+                [thickness]="thicknesses[2]"
+                [isSelected]="selectedThicknessIndex != 2"
+                [icon]="iconNames[2]"
+                (thicknessSelected)="onThicknessChange(2)"
+            ></app-thickness-button>
+            <app-thickness-button
+                [thickness]="thicknesses[3]"
+                [isSelected]="selectedThicknessIndex != 3"
+                [icon]="iconNames[3]"
+                (thicknessSelected)="onThicknessChange(3)"
+            ></app-thickness-button>
+            <app-thickness-button
+                [thickness]="thicknesses[4]"
+                [isSelected]="selectedThicknessIndex != 4"
+                [icon]="iconNames[4]"
+                (thicknessSelected)="onThicknessChange(4)"
+            ></app-thickness-button>
         </div>
         <div class="divider"></div>
         <div class="color-picker">

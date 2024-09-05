@@ -1,0 +1,12 @@
+<div>
+    <ng-container *ngIf="isSelected; else disabled">
+        <button mat-mini-fab matTooltip="{{ thickness }}px" (click)="handleClicked()">
+            <mat-icon svgIcon="{{ icon }}" aria-hidden="false"></mat-icon>
+        </button>
+    </ng-container>
+    <ng-template #disabled>
+        <button mat-mini-fab disabled matTooltip="{{ thickness }}px">
+            <mat-icon svgIcon="{{ icon }}" aria-hidden="false"></mat-icon>
+        </button>
+    </ng-template>
+</div>
