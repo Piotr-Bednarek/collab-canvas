@@ -1,6 +1,7 @@
 <div class="sidebar">
     <div class="container">
-        thickness: {{ thicknesses[selectedThicknessIndex] }}px
+        thickness: {{ thicknesses[selectedThicknessIndex] }}px <br />
+        color: {{ colors[selectedColorIndex] }} <br />
         <div class="pen-size">
             <ng-container *ngIf="selectedThicknessIndex != 0; else pen0">
                 <button mat-mini-fab matTooltip="{{ thicknesses[0] }}px" (click)="onThicknessChange(0)">
@@ -82,6 +83,17 @@
                 </button>
             </ng-template>
         </div>
+        <div class="divider"></div>
+        <div class="color-picker">
+            <div *ngFor="let color of colors; let i = index">
+                <app-color-button
+                    (click)="onColorChange(i)"
+                    [color]="color"
+                    [isSelected]="selectedColorIndex === i"
+                ></app-color-button>
+            </div>
+        </div>
+        <div class="divider"></div>
     </div>
     <div class="footer">
         <button mat-icon-button (click)="handleZoomOutClick()">
@@ -95,23 +107,3 @@
         </button>
     </div>
 </div>
-
-<!-- <div *ngIf="selectedTool != 'move'; else disabledMoveTemplate">
-    <button (click)="selectTool('move')" mat-fab extended><mat-icon>open_with</mat-icon>Move</button>
-</div>
-<ng-template #disabledMoveTemplate>
-    <button (click)="selectTool('move')" mat-fab extended disabled><mat-icon>open_with</mat-icon>Move</button>
-</ng-template> -->
-
-<!-- <button mat-mini-fab matTooltip="{{ thicknesses[1] }}px" (click)="onThicknessChange(1)">
-            <mat-icon svgIcon="pen-size-2" aria-hidden="false"></mat-icon>
-        </button>
-        <button mat-mini-fab matTooltip="{{ thicknesses[2] }}px" (click)="onThicknessChange(2)">
-            <mat-icon svgIcon="pen-size-3" aria-hidden="false"></mat-icon>
-        </button>
-        <button mat-mini-fab matTooltip="{{ thicknesses[3] }}px" (click)="onThicknessChange(3)">
-            <mat-icon svgIcon="pen-size-4" aria-hidden="false"></mat-icon>
-        </button>
-        <button mat-mini-fab matTooltip="{{ thicknesses[4] }}px" (click)="onThicknessChange(4)">
-            <mat-icon svgIcon="pen-size-5" aria-hidden="false"></mat-icon>
-        </button> -->

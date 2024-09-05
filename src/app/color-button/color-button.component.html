@@ -1,0 +1,10 @@
+<main class="outer">
+    <div
+        class="inner"
+        [ngStyle]="{
+            backgroundColor: color,
+            width: isSelected ? selectedSizeRem + 'rem' : notSelectedSizeRem + 'rem',
+            height: isSelected ? selectedSizeRem + 'rem' : notSelectedSizeRem + 'rem'
+        }"
+    ></div>
+</main>

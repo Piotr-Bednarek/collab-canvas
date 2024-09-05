@@ -16,6 +16,7 @@ interface DrawingInterface {
     bounds: DrawingBounds;
     // selected: boolean;
     lineWidth: number;
+    strokeStyle: string;
 }
 
 interface DrawingBounds {

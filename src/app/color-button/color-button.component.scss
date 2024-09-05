@@ -1,0 +1,16 @@
+.outer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background-color: white;
+    border: 1px solid gray;
+    cursor: pointer;
+}
+
+.inner {
+    border-radius: 50%;
+    transition: width 0.3s ease, height 0.3s ease;
+}

@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule, MatIconRegistry } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { DomSanitizer } from '@angular/platform-browser';
+import { ColorButtonComponent } from '../../color-button/color-button.component';
 
 const PEN_SIZE_1 = `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000"><path d="M199-199q-9-9-9-21t9-21l520-520q9-9 21-9t21 9q9 9 9 21t-9 21L241-199q-9 9-21 9t-21-9Z"/></svg>`;
 const PEN_SIZE_2 = `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000"><path d="M212-212q-11-11-11-28t11-28l480-480q11-12 27.5-12t28.5 12q11 11 11 28t-11 28L268-212q-11 11-28 11t-28-11Z"/></svg>`;
@@ -14,7 +15,7 @@ const PEN_SIZE_5 = `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBo
 @Component({
     selector: 'app-sidebar',
     standalone: true,
-    imports: [MatIconModule, MatButtonModule, MatTooltipModule, CommonModule],
+    imports: [MatIconModule, MatButtonModule, MatTooltipModule, CommonModule, ColorButtonComponent],
     templateUrl: './sidebar.component.html',
     styleUrl: './sidebar.component.scss',
 })
@@ -27,20 +28,38 @@ export class SidebarComponent {
         iconRegistry.addSvgIconLiteral('pen-size-5', sanitizer.bypassSecurityTrustHtml(PEN_SIZE_5));
     }
 
-    @Output() thicknessSelected = new EventEmitter<number>();
+    @Input() zoomValue: string = '100%';
+
     @Output() zoomOutClicked = new EventEmitter<void>();
     @Output() zoomInClicked = new EventEmitter<void>();
     @Output() zoomResetClicked = new EventEmitter<void>();
 
-    @Input() zoomValue: string = '100%';
+    @Output() thicknessSelected = new EventEmitter<number>();
+    @Output() colorSelected = new EventEmitter<string>();
 
     thicknesses: number[] = [1, 3, 7, 10, 20];
+    colors: string[] = [
+        '#000000',
+        '#FF0000',
+        '#00FF00',
+        '#0000FF',
+        '#FFFF00',
+        '#FF00FF',
+        '#00FFFF',
+        '#808080',
+    ];
 
     selectedThicknessIndex: number = 2;
+    selectedColorIndex: number = 0;
 
     onThicknessChange(thicknessIndex: number) {
         this.selectedThicknessIndex = thicknessIndex;
         this.thicknessSelected.emit(this.thicknesses[thicknessIndex]);
+    }
+
+    onColorChange(colorIndex: number) {
+        this.selectedColorIndex = colorIndex;
+        this.colorSelected.emit(this.colors[colorIndex]);
     }
 
     handleZoomOutClick() {

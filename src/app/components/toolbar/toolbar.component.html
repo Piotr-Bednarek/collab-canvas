@@ -1,6 +1,8 @@
 <div class="tools">
     <div *ngIf="selectedTool != 'move'; else disabledMoveTemplate">
-        <button (click)="selectTool('move')" mat-fab extended><mat-icon>open_with</mat-icon>Move</button>
+        <button (click)="selectTool('move')" mat-fab extended matTooltip="Press '1'">
+            <mat-icon>open_with</mat-icon>Move
+        </button>
     </div>
     <ng-template #disabledMoveTemplate>
         <button (click)="selectTool('move')" mat-fab extended disabled>
@@ -9,7 +11,7 @@
     </ng-template>
 
     <div *ngIf="selectedTool != 'select'; else disabledSelectTemplate">
-        <button (click)="selectTool('select')" mat-fab extended="">
+        <button (click)="selectTool('select')" mat-fab extended matTooltip="Press '2'">
             <mat-icon svgIcon="select-icon-on" aria-hidden="false"></mat-icon>Select
         </button>
     </div>
@@ -20,7 +22,9 @@
     </ng-template>
 
     <div *ngIf="selectedTool != 'draw'; else disabledDrawTemplate">
-        <button (click)="selectTool('draw')" mat-fab extended><mat-icon>draw</mat-icon>Pencil</button>
+        <button (click)="selectTool('draw')" mat-fab extended matTooltip="Press '3'">
+            <mat-icon>draw</mat-icon>Pencil
+        </button>
     </div>
     <ng-template #disabledDrawTemplate>
         <button (click)="selectTool('draw')" mat-fab extended disabled>
@@ -29,7 +33,7 @@
     </ng-template>
 
     <div *ngIf="selectedTool != 'erase'; else disabledEraseTemplate">
-        <button (click)="selectTool('erase')" mat-fab extended>
+        <button (click)="selectTool('erase')" mat-fab extended matTooltip="Press '4'">
             <mat-icon svgIcon="eraser-icon-on" aria-hidden="false"></mat-icon>Erase
         </button>
     </div>
@@ -40,21 +44,27 @@
     </ng-template>
 
     <div *ngIf="selectedTool != 'rectangle'; else disabledRectangleTemplate">
-        <button (click)="selectTool('rectangle')" mat-fab><mat-icon>rectangle</mat-icon></button>
+        <button (click)="selectTool('rectangle')" mat-fab matTooltip="Press '5'">
+            <mat-icon>rectangle</mat-icon>
+        </button>
     </div>
     <ng-template #disabledRectangleTemplate>
         <button (click)="selectTool('rectangle')" mat-fab disabled><mat-icon>rectangle</mat-icon></button>
     </ng-template>
 
     <div *ngIf="selectedTool != 'circle'; else disabledCircleTemplate">
-        <button (click)="selectTool('circle')" mat-fab><mat-icon>circle</mat-icon></button>
+        <button (click)="selectTool('circle')" mat-fab matTooltip="Press '6'">
+            <mat-icon>circle</mat-icon>
+        </button>
     </div>
     <ng-template #disabledCircleTemplate>
         <button (click)="selectTool('circle')" mat-fab disabled><mat-icon>circle</mat-icon></button>
     </ng-template>
 
     <div *ngIf="selectedTool != 'text_field'; else disabledTextFieldTemplate">
-        <button (click)="selectTool('text_field')" mat-fab><mat-icon>text_fields</mat-icon></button>
+        <button (click)="selectTool('text_field')" mat-fab matTooltip="Press '7'">
+            <mat-icon>text_fields</mat-icon>
+        </button>
     </div>
     <ng-template #disabledTextFieldTemplate>
         <button (click)="selectTool('text_field')" mat-fab disabled><mat-icon>text_fields</mat-icon></button>

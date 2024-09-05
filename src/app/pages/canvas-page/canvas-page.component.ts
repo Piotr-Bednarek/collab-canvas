@@ -111,6 +111,11 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
         this.canvas?.setThickness(thickness);
     }
 
+    onColorSelected(color: string): void {
+        // console.log('Color selected:', color);
+        this.canvas?.setColor(color);
+    }
+
     ngAfterViewInit(): void {
         this.canvasId = this.route.snapshot.paramMap.get('id');
 

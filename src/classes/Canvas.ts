@@ -1,4 +1,4 @@
-import { ElementRef, inject, Inject } from '@angular/core';
+import { CSP_NONCE, ElementRef, inject, Inject } from '@angular/core';
 import { Drawing } from './Drawing';
 import { Eraser } from './Eraser';
 import { Grid } from './Grid';
@@ -23,7 +23,9 @@ class Canvas {
     //-----------------------------------
 
     private selectedTool: SelectedTool = 'move';
+
     private selectedThickness: number = 7;
+    private selectedColor: string = '#000000';
 
     //-----------------------------------
 
@@ -86,6 +88,18 @@ class Canvas {
 
         if (this.selectedDrawing) {
             this.selectedDrawing.setThickness(thickness);
+
+            this.draw();
+        }
+    }
+
+    setColor(color: string) {
+        this.selectedColor = color;
+
+        console.log('color: ', color);
+
+        if (this.selectedDrawing) {
+            this.selectedDrawing.setColor(color);
 
             this.draw();
         }
@@ -272,19 +286,14 @@ class Canvas {
 
     addPointToDrawing(x: number, y: number) {
         if (!this.drawing) {
-            this.drawing = new Drawing();
+            this.drawing = new Drawing(this.selectedThickness, this.selectedColor);
         }
 
         this.drawing.setThickness(this.selectedThickness);
 
-        // Apply translation and scaling to get the correct point
         const scaledX = (x - this.scaleOriginX) / this.canvasScale + this.translateX;
         const scaledY = (y - this.scaleOriginY) / this.canvasScale + this.translateY;
 
-        // Debugging for transformed points
-        // console.log('scaled x: ', scaledX, 'scaled y: ', scaledY);
-
-        // Add the transformed point to the drawing
         this.drawing.addPoint(new Point(scaledX, scaledY));
 
         this.drawUnfinished();

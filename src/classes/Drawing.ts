@@ -11,6 +11,7 @@ class Drawing implements DrawingInterface {
     anchors: Anchor[];
 
     lineWidth: number;
+    strokeStyle: string;
 
     originalPoints: Point[] = [];
     originalBounds: DrawingBounds | undefined;
@@ -37,11 +38,12 @@ class Drawing implements DrawingInterface {
     translateY: number = 0;
 
     constructor(
-        id?: string,
+        lineWidth: number,
+        strokeStyle: string,
         points: Point[] = [],
+        id?: string,
         bounds: DrawingBounds = { top: 0, left: 0, bottom: 0, right: 0 },
-        selected: boolean = false,
-        lineWidth: number = 5
+        selected: boolean = false
     ) {
         this.points = points;
         this.bounds = bounds;
@@ -65,6 +67,7 @@ class Drawing implements DrawingInterface {
         }
 
         this.lineWidth = lineWidth;
+        this.strokeStyle = strokeStyle;
     }
 
     addPoint(point: Point) {
@@ -193,7 +196,7 @@ class Drawing implements DrawingInterface {
             return;
         }
 
-        ctx.strokeStyle = 'black';
+        ctx.strokeStyle = this.strokeStyle;
         ctx.lineWidth = this.lineWidth;
         ctx.lineCap = 'round';
 
@@ -431,6 +434,12 @@ class Drawing implements DrawingInterface {
         this.lineWidth = thickness;
 
         console.log('Setting thickness:', thickness);
+    }
+
+    setColor(color: string) {
+        this.strokeStyle = color;
+
+        console.log('Setting color:', color);
     }
 
     exportDrawing() {

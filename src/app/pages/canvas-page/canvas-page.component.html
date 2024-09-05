@@ -12,10 +12,11 @@
         <div class="sidebar">
             <app-sidebar
                 [zoomValue]="getZoomValue()"
-                (thicknessSelected)="onThicknessSelected($event)"
                 (zoomOutClicked)="zoomOutClicked($event)"
                 (zoomInClicked)="zoomInClicked($event)"
                 (zoomResetClicked)="zoomResetClicked($event)"
+                (thicknessSelected)="onThicknessSelected($event)"
+                (colorSelected)="onColorSelected($event)"
             ></app-sidebar>
         </div>
 

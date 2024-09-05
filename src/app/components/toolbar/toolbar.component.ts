@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, HostListener, Output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule, MatIconRegistry } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { DomSanitizer } from '@angular/platform-browser';
 import { SelectedTool } from '../../interfaces/selected-tool';
 
@@ -13,7 +14,7 @@ const SELECT_ICON_OFF = `<svg xmlns="http://www.w3.org/2000/svg" height="24px" v
 @Component({
     selector: 'app-toolbar',
     standalone: true,
-    imports: [MatIconModule, MatButtonModule, CommonModule],
+    imports: [MatIconModule, MatButtonModule, CommonModule, MatTooltipModule],
     templateUrl: './toolbar.component.html',
     styleUrl: './toolbar.component.scss',
 })
