@@ -43,8 +43,19 @@
         </button>
     </ng-template>
 
+    <div *ngIf="selectedTool != 'line'; else disabledLineTemplate">
+        <button (click)="selectTool('line')" mat-fab matTooltip="Press '5'">
+            <mat-icon svgIcon="line-icon-on" aria-hidden="false"></mat-icon>
+        </button>
+    </div>
+    <ng-template #disabledLineTemplate>
+        <button (click)="selectTool('line')" mat-fab disabled>
+            <mat-icon svgIcon="line-icon-off" aria-hidden="false"></mat-icon>
+        </button>
+    </ng-template>
+
     <div *ngIf="selectedTool != 'rectangle'; else disabledRectangleTemplate">
-        <button (click)="selectTool('rectangle')" mat-fab matTooltip="Press '5'">
+        <button (click)="selectTool('rectangle')" mat-fab matTooltip="Press '6'">
             <mat-icon>rectangle</mat-icon>
         </button>
     </div>
@@ -53,7 +64,7 @@
     </ng-template>
 
     <div *ngIf="selectedTool != 'circle'; else disabledCircleTemplate">
-        <button (click)="selectTool('circle')" mat-fab matTooltip="Press '6'">
+        <button (click)="selectTool('circle')" mat-fab matTooltip="Press '7'">
             <mat-icon>circle</mat-icon>
         </button>
     </div>
@@ -62,7 +73,7 @@
     </ng-template>
 
     <div *ngIf="selectedTool != 'text_field'; else disabledTextFieldTemplate">
-        <button (click)="selectTool('text_field')" mat-fab matTooltip="Press '7'">
+        <button (click)="selectTool('text_field')" mat-fab matTooltip="Press '8'">
             <mat-icon>text_fields</mat-icon>
         </button>
     </div>
