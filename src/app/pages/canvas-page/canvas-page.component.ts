@@ -1,5 +1,6 @@
 import {
     AfterViewInit,
+    ChangeDetectorRef,
     Component,
     ElementRef,
     HostListener,
@@ -25,10 +26,7 @@ import {
 import { Subscription } from 'rxjs';
 import { Canvas } from '../../../classes/Canvas';
 import { FirebaseDrawing } from '../../firebase-drawing';
-import { DrawingInterface } from '../../interfaces/interfaces';
 
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { SidebarComponent } from '../../components/sidebar/sidebar.component';
@@ -63,7 +61,7 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
 
     // drawingSubscription: Unsubscribe;
 
-    constructor(private route: ActivatedRoute) {
+    constructor(private route: ActivatedRoute, private cdr: ChangeDetectorRef) {
         this.userSubscription = this.user$.subscribe((aUser: User | null) => {
             if (aUser) {
                 this.user = aUser;
@@ -98,8 +96,6 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
     // private isDrawing: boolean = false;
     // private isMoving: boolean = false;
 
-    // selectedTool = 'move'; // 'draw' or 'move'
-
     lastAddedDrawingId: string | null = null;
 
     onToolSelected(tool: string): void {
@@ -126,6 +122,8 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
 
         this.adjustCanvasSize();
         this.canvas = new Canvas(this.canvasElementRef!, this.context!);
+
+        this.cdr.detectChanges();
 
         // this.canvas = new Canvas(
         //     drawings: [],

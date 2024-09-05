@@ -1,4 +1,4 @@
-import { PointType } from '../app/interfaces/interfaces';
+import { PointType } from '../app/interfaces/point';
 
 class Point implements PointType {
     x: number;

@@ -1,22 +1,25 @@
 import { v4 as uuidv4 } from 'uuid';
-import { DrawingBounds, DrawingInterface } from '../app/interfaces/interfaces';
+
+import { DrawingBounds, DrawingInterface, DrawingType } from '../app/interfaces/drawing';
 import { Anchor } from './Anchor';
 import { Point } from './Point';
 
 class Drawing implements DrawingInterface {
     id: string;
+    drawingType: DrawingType;
 
     points: Point[];
     bounds: DrawingBounds;
-    anchors: Anchor[];
+    anchors: Anchor[] | undefined;
 
     lineWidth: number;
     strokeStyle: string;
+    fillStyle: string;
 
-    originalPoints: Point[] = [];
+    originalPoints: Point[] | undefined;
     originalBounds: DrawingBounds | undefined;
 
-    isHovered: boolean;
+    isHovered: boolean | undefined;
     isSelected: boolean = false;
     isFinished: boolean = false;
 
@@ -37,18 +40,32 @@ class Drawing implements DrawingInterface {
     translateX: number = 0;
     translateY: number = 0;
 
+    addNextPoint: boolean = false;
+
     constructor(
+        drawingType: DrawingType,
         lineWidth: number,
         strokeStyle: string,
+        fillStyle: string,
         points: Point[] = [],
-        id?: string,
+        id: string = uuidv4(),
         bounds: DrawingBounds = { top: 0, left: 0, bottom: 0, right: 0 },
         selected: boolean = false
     ) {
         this.points = points;
         this.bounds = bounds;
-        this.isHovered = selected;
+        this.drawingType = drawingType;
 
+        this.constructAnchors(this.bounds);
+
+        this.id = id;
+
+        this.lineWidth = lineWidth;
+        this.strokeStyle = strokeStyle;
+        this.fillStyle = fillStyle;
+    }
+
+    constructAnchors(bounds: DrawingBounds) {
         this.anchors = [
             new Anchor(bounds.left, bounds.top, this.anchorSize),
             new Anchor(bounds.right, bounds.top, this.anchorSize),
@@ -59,19 +76,35 @@ class Drawing implements DrawingInterface {
             new Anchor(bounds.left, (bounds.top + bounds.bottom) / 2, this.anchorSize),
             new Anchor(bounds.right, (bounds.top + bounds.bottom) / 2, this.anchorSize),
         ];
-
-        if (id) {
-            this.id = id;
-        } else {
-            this.id = uuidv4();
-        }
-
-        this.lineWidth = lineWidth;
-        this.strokeStyle = strokeStyle;
     }
 
     addPoint(point: Point) {
-        this.points.push(point);
+        if (this.drawingType === 'freehand') {
+            this.points.push(point);
+        }
+
+        if (this.drawingType === 'line') {
+            console.log('Adding point:', point);
+            console.log('Points:', this.points);
+
+            if (this.addNextPoint) {
+                this.points.push(point);
+                this.addNextPoint = false;
+                return;
+            }
+            // this.points = [this.points[0], point];
+            //change the last point
+
+            if (this.points.length < 2) {
+                this.points.push(point);
+                this.addNextPoint = true;
+                return;
+            }
+
+            const lastIndex = this.points.length - 1;
+
+            this.points[lastIndex] = point;
+        }
 
         this.updateBounds();
     }
@@ -98,34 +131,36 @@ class Drawing implements DrawingInterface {
     }
 
     updateAnchors() {
+        if (!this.anchors) return;
+
         for (const anchor of this.anchors) {
             if (this.selectedAnchor == this.hoveredAnchor) continue;
             anchor.isSelected = false;
         }
 
-        this.anchors[0].x = this.bounds.left;
-        this.anchors[0].y = this.bounds.top;
+        this.anchors[0].point.x = this.bounds.left;
+        this.anchors[0].point.y = this.bounds.top;
 
-        this.anchors[1].x = this.bounds.right;
-        this.anchors[1].y = this.bounds.top;
+        this.anchors[1].point.x = this.bounds.right;
+        this.anchors[1].point.y = this.bounds.top;
 
-        this.anchors[2].x = this.bounds.left;
-        this.anchors[2].y = this.bounds.bottom;
+        this.anchors[2].point.x = this.bounds.left;
+        this.anchors[2].point.y = this.bounds.bottom;
 
-        this.anchors[3].x = this.bounds.right;
-        this.anchors[3].y = this.bounds.bottom;
+        this.anchors[3].point.x = this.bounds.right;
+        this.anchors[3].point.y = this.bounds.bottom;
 
-        this.anchors[4].x = (this.bounds.left + this.bounds.right) / 2;
-        this.anchors[4].y = this.bounds.top;
+        this.anchors[4].point.x = (this.bounds.left + this.bounds.right) / 2;
+        this.anchors[4].point.y = this.bounds.top;
 
-        this.anchors[5].x = (this.bounds.left + this.bounds.right) / 2;
-        this.anchors[5].y = this.bounds.bottom;
+        this.anchors[5].point.x = (this.bounds.left + this.bounds.right) / 2;
+        this.anchors[5].point.y = this.bounds.bottom;
 
-        this.anchors[6].x = this.bounds.left;
-        this.anchors[6].y = (this.bounds.top + this.bounds.bottom) / 2;
+        this.anchors[6].point.x = this.bounds.left;
+        this.anchors[6].point.y = (this.bounds.top + this.bounds.bottom) / 2;
 
-        this.anchors[7].x = this.bounds.right;
-        this.anchors[7].y = (this.bounds.top + this.bounds.bottom) / 2;
+        this.anchors[7].point.x = this.bounds.right;
+        this.anchors[7].point.y = (this.bounds.top + this.bounds.bottom) / 2;
     }
 
     // logDrawing() {
@@ -133,7 +168,7 @@ class Drawing implements DrawingInterface {
     // }
 
     calculateScaledPoints() {
-        if (!this.originalBounds || !this.bounds) return;
+        if (!this.originalBounds || !this.bounds || !this.originalPoints) return;
 
         const scaleX =
             (this.bounds.right - this.bounds.left) / (this.originalBounds.right - this.originalBounds.left);
@@ -192,6 +227,17 @@ class Drawing implements DrawingInterface {
     }
 
     draw(ctx: CanvasRenderingContext2D, translateX: number, translateY: number) {
+        if (this.drawingType === 'freehand') {
+            this.drawFreehand(ctx, translateX, translateY);
+        }
+
+        if (this.drawingType === 'line') {
+            // console.log('Drawing line:', this.points);
+            this.drawLine(ctx, translateX, translateY);
+        }
+    }
+
+    drawFreehand(ctx: CanvasRenderingContext2D, translateX: number, translateY: number) {
         if (this.points.length < 1) {
             return;
         }
@@ -216,6 +262,35 @@ class Drawing implements DrawingInterface {
                 controlPointX,
                 controlPointY
             );
+        }
+
+        const lastPoint = this.points[this.points.length - 1];
+        ctx.lineTo(lastPoint.x - translateX, lastPoint.y - translateY);
+
+        ctx.lineWidth = this.lineWidth;
+        ctx.stroke();
+
+        if (this.isFinished) {
+            this.drawBoundsRectangle(ctx, translateX, translateY);
+        }
+    }
+
+    drawLine(ctx: CanvasRenderingContext2D, translateX: number, translateY: number) {
+        if (this.points.length < 2) {
+            return;
+        }
+
+        ctx.strokeStyle = this.strokeStyle;
+        ctx.lineWidth = this.lineWidth;
+        ctx.lineCap = 'round';
+
+        ctx.beginPath();
+        ctx.moveTo(this.points[0].x - translateX, this.points[0].y - translateY);
+
+        for (let i = 1; i < this.points.length - 1; i++) {
+            const currentPoint = this.points[i];
+
+            ctx.lineTo(currentPoint.x - translateX, currentPoint.y - translateY);
         }
 
         const lastPoint = this.points[this.points.length - 1];
@@ -254,7 +329,7 @@ class Drawing implements DrawingInterface {
     }
 
     drawAnchors(ctx: CanvasRenderingContext2D, translateX: number, translateY: number) {
-        if (!this.isSelected) return;
+        if (!this.isSelected || !this.anchors) return;
 
         for (const anchor of this.anchors) {
             anchor.draw(ctx, translateX, translateY);
@@ -264,20 +339,26 @@ class Drawing implements DrawingInterface {
     finish() {
         this.isFinished = true;
 
+        if (this.drawingType === 'line') {
+            this.points.pop();
+        }
+
         this.originalPoints = [...this.points];
 
         this.updateBounds();
     }
 
     checkHoverAnchor(x: number, y: number) {
+        if (!this.anchors) return;
+
         this.hoveredAnchor = null;
 
         for (const anchor of this.anchors) {
             if (
-                x > anchor.x - this.anchorSize / 2 &&
-                x < anchor.x + this.anchorSize / 2 &&
-                y > anchor.y - this.anchorSize / 2 &&
-                y < anchor.y + this.anchorSize / 2
+                x > anchor.point.x - this.anchorSize / 2 &&
+                x < anchor.point.x + this.anchorSize / 2 &&
+                y > anchor.point.y - this.anchorSize / 2 &&
+                y < anchor.point.y + this.anchorSize / 2
             ) {
                 anchor.isHovered = true;
                 this.hoveredAnchor = anchor;
@@ -294,7 +375,7 @@ class Drawing implements DrawingInterface {
     }
 
     handleAnchorSelect() {
-        if (!this.hoveredAnchor) return;
+        if (!this.hoveredAnchor || !this.anchors) return;
 
         this.updateOriginalBounds();
 
@@ -433,13 +514,13 @@ class Drawing implements DrawingInterface {
     setThickness(thickness: number) {
         this.lineWidth = thickness;
 
-        console.log('Setting thickness:', thickness);
+        // console.log('Setting thickness:', thickness);
     }
 
     setColor(color: string) {
         this.strokeStyle = color;
 
-        console.log('Setting color:', color);
+        // console.log('Setting color:', color);
     }
 
     exportDrawing() {

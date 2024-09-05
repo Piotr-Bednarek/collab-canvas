@@ -1,15 +1,17 @@
-import { AnchorType } from '../app/interfaces/interfaces';
+import { AnchorInterface } from '../app/interfaces/anchor';
+import { PointType } from '../app/interfaces/point';
+import { Point } from './Point';
 
-class Anchor implements AnchorType {
-    x: number;
-    y: number;
+class Anchor implements AnchorInterface {
+    point: PointType;
+
     size: number;
     isHovered: boolean;
     isSelected: boolean;
 
     constructor(x: number, y: number, size: number) {
-        this.x = x;
-        this.y = y;
+        this.point = new Point(x, y);
+
         this.size = size;
         this.isHovered = false;
         this.isSelected = false;
@@ -20,8 +22,8 @@ class Anchor implements AnchorType {
         ctx.fillStyle = this.isSelected ? 'blue' : ctx.fillStyle;
 
         ctx.fillRect(
-            this.x - this.size / 2 - translateX,
-            this.y - this.size / 2 - translateY,
+            this.point.x - this.size / 2 - translateX,
+            this.point.y - this.size / 2 - translateY,
             this.size,
             this.size
         );

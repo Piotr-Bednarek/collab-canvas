@@ -8,6 +8,7 @@ import { EventEmitter, Injectable } from '@angular/core';
 import { Auth } from '@angular/fire/auth';
 import { Firestore } from '@angular/fire/firestore';
 import { FirebaseDrawing } from '../app/firebase-drawing';
+import { DrawingType } from '../app/interfaces/drawing';
 import { SelectedTool } from '../app/interfaces/selected-tool';
 
 @Injectable({
@@ -26,6 +27,8 @@ class Canvas {
 
     private selectedThickness: number = 7;
     private selectedColor: string = '#000000';
+
+    private selectedDrawingType: DrawingType = 'freehand';
 
     //-----------------------------------
 
@@ -82,7 +85,38 @@ class Canvas {
 
     setTool(tool: SelectedTool) {
         this.selectedTool = tool;
+
+        this.evaluateSelectedDrawingType(tool);
     }
+
+    evaluateSelectedDrawingType(tool: SelectedTool) {
+        if (tool === 'draw') {
+            this.selectedDrawingType = 'freehand';
+        }
+
+        if (tool === 'line') {
+            this.selectedDrawingType = 'line';
+        }
+
+        if (tool === 'rectangle') {
+            this.selectedDrawingType = 'rectangle';
+        }
+
+        if (tool === 'circle') {
+            this.selectedDrawingType = 'circle';
+        }
+
+        if (tool === 'text_field') {
+            this.selectedDrawingType = 'text_field';
+        }
+
+        console.log('selected drawing type: ', this.selectedDrawingType);
+
+        // if (tool === 'image') {
+        //     this.selectedDrawingType = 'image';
+        // }
+    }
+
     setThickness(thickness: number) {
         this.selectedThickness = thickness;
 
@@ -116,11 +150,7 @@ class Canvas {
     }
 
     handleMouseDown($event: MouseEvent) {
-        // console.log('mouse down');
-
         if (this.selectedTool === 'move') {
-            // this.skipCheck = false;
-            // console.log('move tool');
             this.isMoving = true;
 
             this.moveStart($event.offsetX, $event.offsetY);
@@ -145,16 +175,36 @@ class Canvas {
             this.isDrawing = true;
         }
 
+        if (this.selectedTool === 'line') {
+            if ($event.button === 2) {
+                console.log('right click');
+
+                this.addDrawing();
+
+                this.isDrawing = false;
+
+                return;
+            }
+
+            this.isDrawing = true;
+            this.addPointToDrawing($event.offsetX, $event.offsetY);
+
+            if (this.drawing) this.drawing.addNextPoint = true;
+        }
+
         if (this.selectedTool === 'erase') {
             this.isErasing = true;
         }
+
+        console.log('mouse down');
 
         this.draw();
     }
 
     handleMouseMove($event: MouseEvent) {
-        this.checkHover($event.offsetX, $event.offsetY);
+        // console.log('current drawing: ', this.drawing?.drawingType);
 
+        this.checkHover($event.offsetX, $event.offsetY);
         this.checkHoverAnchor($event.offsetX, $event.offsetY);
 
         if (this.isMovingDrawing) {
@@ -203,6 +253,11 @@ class Canvas {
             this.isDrawing = false;
             this.addDrawing();
         }
+
+        // if (this.selectedTool === 'line') {
+        //     console.log('line up');
+        // }
+
         if (this.selectedTool === 'erase') {
             this.isErasing = false;
 
@@ -286,13 +341,21 @@ class Canvas {
 
     addPointToDrawing(x: number, y: number) {
         if (!this.drawing) {
-            this.drawing = new Drawing(this.selectedThickness, this.selectedColor);
+            this.drawing = new Drawing(
+                this.selectedDrawingType,
+                this.selectedThickness,
+                this.selectedColor,
+                '#FFFFFF'
+            );
         }
 
         this.drawing.setThickness(this.selectedThickness);
+        this.drawing.setColor(this.selectedColor);
 
         const scaledX = (x - this.scaleOriginX) / this.canvasScale + this.translateX;
         const scaledY = (y - this.scaleOriginY) / this.canvasScale + this.translateY;
+
+        // console.log('scaled x: ', scaledX, 'scaled y: ', scaledY);
 
         this.drawing.addPoint(new Point(scaledX, scaledY));
 
@@ -330,6 +393,8 @@ class Canvas {
 
     drawUnfinished() {
         if (!this.drawing) return;
+
+        if (this.drawing.points.length < 1) return;
 
         this.drawing.draw(this.context!, this.translateX, this.translateY);
     }

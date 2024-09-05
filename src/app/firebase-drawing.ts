@@ -1,4 +1,4 @@
-import { PointType } from './interfaces/interfaces';
+import { PointType } from './interfaces/point';
 
 export interface FirebaseDrawing {
     id: string;
