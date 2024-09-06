@@ -89,7 +89,11 @@ class Canvas {
     setTool(tool: SelectedTool) {
         this.selectedTool = tool;
 
+        this.clearSelected();
+
         this.evaluateSelectedDrawingType(tool);
+
+        this.draw();
     }
 
     evaluateSelectedDrawingType(tool: SelectedTool) {
