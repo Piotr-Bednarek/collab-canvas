@@ -3,7 +3,7 @@ export type SelectedTool =
     | 'draw'
     | 'erase'
     | 'rectangle'
-    | 'circle'
+    | 'ellipse'
     | 'select'
     | 'text_field'
     | 'line';

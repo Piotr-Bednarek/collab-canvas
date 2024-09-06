@@ -106,6 +106,22 @@ class Drawing implements DrawingInterface {
             this.points[lastIndex] = point;
         }
 
+        if (this.drawingType === 'rectangle') {
+            if (this.points.length < 2) {
+                this.points.push(point);
+            } else {
+                this.points[1] = point;
+            }
+        }
+
+        if (this.drawingType === 'ellipse') {
+            if (this.points.length < 2) {
+                this.points.push(point);
+            } else {
+                this.points[1] = point;
+            }
+        }
+
         this.updateBounds();
     }
 
@@ -232,15 +248,20 @@ class Drawing implements DrawingInterface {
         }
 
         if (this.drawingType === 'line') {
-            // console.log('Drawing line:', this.points);
             this.drawLine(ctx, translateX, translateY);
+        }
+
+        if (this.drawingType === 'rectangle') {
+            this.drawRectangle(ctx, translateX, translateY);
+        }
+
+        if (this.drawingType === 'ellipse') {
+            this.drawEllipse(ctx, translateX, translateY);
         }
     }
 
     drawFreehand(ctx: CanvasRenderingContext2D, translateX: number, translateY: number) {
-        if (this.points.length < 1) {
-            return;
-        }
+        if (this.points.length < 1) return;
 
         ctx.strokeStyle = this.strokeStyle;
         ctx.lineWidth = this.lineWidth;
@@ -276,9 +297,7 @@ class Drawing implements DrawingInterface {
     }
 
     drawLine(ctx: CanvasRenderingContext2D, translateX: number, translateY: number) {
-        if (this.points.length < 2) {
-            return;
-        }
+        if (this.points.length < 2) return;
 
         ctx.strokeStyle = this.strokeStyle;
         ctx.lineWidth = this.lineWidth;
@@ -299,6 +318,88 @@ class Drawing implements DrawingInterface {
         ctx.lineWidth = this.lineWidth;
         ctx.stroke();
 
+        if (this.isFinished) {
+            this.drawBoundsRectangle(ctx, translateX, translateY);
+        }
+    }
+
+    drawRectangle(ctx: CanvasRenderingContext2D, translateX: number, translateY: number) {
+        if (this.points.length < 2) return;
+
+        ctx.strokeStyle = this.strokeStyle;
+        ctx.lineWidth = this.lineWidth;
+        ctx.lineCap = 'round';
+        ctx.fillStyle = this.fillStyle;
+
+        ctx.beginPath();
+
+        const region = new Path2D();
+
+        region.rect(
+            this.points[0].x - translateX,
+            this.points[0].y - translateY,
+            this.points[1].x - this.points[0].x,
+            this.points[1].y - this.points[0].y
+        );
+
+        ctx.globalAlpha = 0.5;
+
+        ctx.fill(region);
+
+        ctx.globalAlpha = 1;
+
+        ctx.strokeRect(
+            this.points[0].x - translateX,
+            this.points[0].y - translateY,
+            this.points[1].x - this.points[0].x,
+            this.points[1].y - this.points[0].y
+        );
+
+        ctx.stroke();
+
+        if (this.isFinished) {
+            this.drawBoundsRectangle(ctx, translateX, translateY);
+        }
+    }
+
+    drawEllipse(ctx: CanvasRenderingContext2D, translateX: number, translateY: number) {
+        if (this.points.length < 2) return;
+
+        ctx.strokeStyle = this.strokeStyle;
+        ctx.lineWidth = this.lineWidth;
+        ctx.lineCap = 'round';
+        ctx.fillStyle = this.fillStyle;
+
+        ctx.beginPath();
+
+        // Find the top-left and bottom-right coordinates of the rectangle
+        const x1 = this.points[0].x - translateX;
+        const y1 = this.points[0].y - translateY;
+        const x2 = this.points[1].x - translateX;
+        const y2 = this.points[1].y - translateY;
+
+        // Calculate the center of the rectangle
+        const centerX = (x1 + x2) / 2;
+        const centerY = (y1 + y2) / 2;
+
+        // Calculate the radii for the ellipse
+        const radiusX = Math.abs(x2 - x1) / 2;
+        const radiusY = Math.abs(y2 - y1) / 2;
+
+        // Draw the ellipse using the calculated center and radii
+        ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
+
+        // Fill the ellipse with the fill color
+        ctx.globalAlpha = 0.5;
+        ctx.fill();
+
+        // Reset global alpha for stroke
+        ctx.globalAlpha = 1;
+
+        // Stroke the ellipse with the stroke color
+        ctx.stroke();
+
+        // If the drawing is finished, draw the bounds rectangle (optional)
         if (this.isFinished) {
             this.drawBoundsRectangle(ctx, translateX, translateY);
         }

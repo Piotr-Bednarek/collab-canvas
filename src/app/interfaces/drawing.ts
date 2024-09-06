@@ -10,7 +10,7 @@ interface DrawingInterface {
     fillStyle: string;
 }
 
-type DrawingType = 'freehand' | 'line' | 'rectangle' | 'circle' | 'text_field' | 'image';
+type DrawingType = 'freehand' | 'line' | 'rectangle' | 'ellipse' | 'text_field' | 'image';
 
 type DrawingBounds = {
     top: number;

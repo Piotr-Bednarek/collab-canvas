@@ -63,13 +63,13 @@
         <button (click)="selectTool('rectangle')" mat-fab disabled><mat-icon>rectangle</mat-icon></button>
     </ng-template>
 
-    <div *ngIf="selectedTool != 'circle'; else disabledCircleTemplate">
-        <button (click)="selectTool('circle')" mat-fab matTooltip="Press '7'">
+    <div *ngIf="selectedTool != 'ellipse'; else disabledCircleTemplate">
+        <button (click)="selectTool('ellipse')" mat-fab matTooltip="Press '7'">
             <mat-icon>circle</mat-icon>
         </button>
     </div>
     <ng-template #disabledCircleTemplate>
-        <button (click)="selectTool('circle')" mat-fab disabled><mat-icon>circle</mat-icon></button>
+        <button (click)="selectTool('ellipse')" mat-fab disabled><mat-icon>circle</mat-icon></button>
     </ng-template>
 
     <div *ngIf="selectedTool != 'text_field'; else disabledTextFieldTemplate">

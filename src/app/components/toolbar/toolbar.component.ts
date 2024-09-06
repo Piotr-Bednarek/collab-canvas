@@ -71,7 +71,7 @@ export class ToolbarComponent {
 
     @HostListener('window:keydown.7', ['$event'])
     handlePress7() {
-        this.selectTool('circle');
+        this.selectTool('ellipse');
     }
 
     @HostListener('window:keydown.8', ['$event'])

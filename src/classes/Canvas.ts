@@ -102,8 +102,8 @@ class Canvas {
             this.selectedDrawingType = 'rectangle';
         }
 
-        if (tool === 'circle') {
-            this.selectedDrawingType = 'circle';
+        if (tool === 'ellipse') {
+            this.selectedDrawingType = 'ellipse';
         }
 
         if (tool === 'text_field') {
@@ -192,6 +192,16 @@ class Canvas {
             if (this.drawing) this.drawing.addNextPoint = true;
         }
 
+        if (this.selectedTool === 'rectangle') {
+            this.isDrawing = true;
+            this.addPointToDrawing($event.offsetX, $event.offsetY);
+        }
+
+        if (this.selectedTool === 'ellipse') {
+            this.isDrawing = true;
+            this.addPointToDrawing($event.offsetX, $event.offsetY);
+        }
+
         if (this.selectedTool === 'erase') {
             this.isErasing = true;
         }
@@ -250,6 +260,16 @@ class Canvas {
         }
 
         if (this.selectedTool === 'draw') {
+            this.isDrawing = false;
+            this.addDrawing();
+        }
+
+        if (this.selectedTool === 'rectangle') {
+            this.isDrawing = false;
+            this.addDrawing();
+        }
+
+        if (this.selectedTool === 'ellipse') {
             this.isDrawing = false;
             this.addDrawing();
         }
