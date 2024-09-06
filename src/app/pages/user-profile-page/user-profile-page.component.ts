@@ -31,6 +31,8 @@ import {
     MatDialogRef,
     MatDialogTitle,
 } from '@angular/material/dialog';
+import { CanvasEditDialogComponent } from '../../components/canvas-edit-dialog/canvas-edit-dialog.component';
+import { CanvasItemComponent } from '../../components/canvas-item/canvas-item.component';
 import { CanvasRemoveDialogComponent } from '../../components/canvas-remove-dialog/canvas-remove-dialog.component';
 @Component({
     selector: 'app-user-profile-page',
@@ -43,6 +45,7 @@ import { CanvasRemoveDialogComponent } from '../../components/canvas-remove-dial
         MatIconModule,
         MatButtonModule,
         MatProgressSpinnerModule,
+        CanvasItemComponent,
     ],
     templateUrl: './user-profile-page.component.html',
     styleUrl: './user-profile-page.component.scss',
@@ -93,7 +96,7 @@ export class UserProfilePageComponent implements OnDestroy {
 
         const newCanvasData = {
             title: 'Untitled Canvas',
-            ownerUid: this.user.uid,
+            owner: this.user.uid,
             created: new Date(),
         };
 
@@ -108,7 +111,7 @@ export class UserProfilePageComponent implements OnDestroy {
         }
 
         const canvasesCollection = collection(this.firestore, `canvases`);
-        const canvasesQuery = query(canvasesCollection, where('ownerUid', '==', this.user.uid));
+        const canvasesQuery = query(canvasesCollection, where('owner', '==', this.user.uid));
 
         const querySnapshot = await getDocs(canvasesQuery);
 
@@ -117,8 +120,8 @@ export class UserProfilePageComponent implements OnDestroy {
             const canvasData: CanvasItem = {
                 id: doc.id,
                 title: doc.data()['title'],
-                ownerUid: doc.data()['ownerUid'],
-                created: this.getFormattedDate(doc.data()['created'].toDate()),
+                owner: doc.data()['owner'],
+                created: doc.data()['createdAt'],
             };
 
             this.canvasesSource.next({
@@ -140,37 +143,15 @@ export class UserProfilePageComponent implements OnDestroy {
         this.router.navigate(['/canvas', canvasId]);
     }
 
-    getFormattedDate(date: Date) {
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-
-        return `${day}/${month}/${year}`;
-    }
-
-    handleCanvasDeleteDialog(canvasId: string, event: MouseEvent) {
-        event.stopPropagation();
-
-        const dialogRef = this.dialog.open(CanvasRemoveDialogComponent);
-
-        dialogRef.afterClosed().subscribe((result) => {
-            console.log('The dialog was closed:', result);
-
-            if (result === 'delete') {
-                this.handleCanvasDelete(canvasId);
-            }
-        });
-    }
-
-    async handleCanvasDelete(canvasId: string) {
+    async handleCanvasDelete(id: string) {
         if (!this.user) {
             console.log('Cannot delete canvas, no user logged in.');
             return;
         }
 
-        console.log('Deleting canvas:', canvasId);
+        console.log('Deleting canvas:', id);
 
-        const canvasRef = doc(this.firestore, `canvases/${canvasId}`);
+        const canvasRef = doc(this.firestore, `canvases/${id}`);
 
         await deleteDoc(canvasRef);
 

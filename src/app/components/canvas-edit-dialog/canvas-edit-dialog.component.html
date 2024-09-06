@@ -1,0 +1,11 @@
+<h2 mat-dialog-title>Editing canvas</h2>
+<mat-dialog-content>
+    <mat-form-field>
+        <mat-label>Title</mat-label>
+        <input matInput [(ngModel)]="title" />
+    </mat-form-field>
+</mat-dialog-content>
+<mat-dialog-actions>
+    <button mat-button (click)="onNoClick()">Discard</button>
+    <button mat-button [mat-dialog-close]="true" (click)="onYesClick()" cdkFocusInitial>Update</button>
+</mat-dialog-actions>

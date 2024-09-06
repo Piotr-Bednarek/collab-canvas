@@ -6,6 +6,7 @@ export interface Canvases {
 export interface CanvasItem {
     id: string;
     title: string;
-    ownerUid: string;
     created: string;
+    owner: string;
+    collaborators?: string[];
 }

@@ -38,7 +38,12 @@
                     class="canvas-container"
                     (click)="handleRoutingToCanvas(canvas.id)"
                 >
-                    <div class="canvas-details">
+                    <app-canvas-item
+                        [id]="canvas.id"
+                        (handleDelete)="handleCanvasDelete($event)"
+                    ></app-canvas-item>
+
+                    <!-- <div class="canvas-details">
                         <p>{{ canvas.title }} - {{ canvas.id }}</p>
                         <p>Created: {{ canvas.created }}</p>
                         <p>Last edited: {{ canvas.created }}</p>
@@ -47,10 +52,10 @@
                         <button (click)="handleCanvasDeleteDialog(canvas.id, $event)" mat-mini-fab>
                             <mat-icon>delete</mat-icon>
                         </button>
-                        <!-- <button mat-mini-fab>
-                            <mat-icon>share</mat-icon>
-                        </button> -->
-                    </div>
+                        <button (click)="handleCanvasEditDialog(canvas.id, $event)" mat-mini-fab>
+                            <mat-icon>edit</mat-icon>
+                        </button>
+                    </div> -->
                 </div>
             </div>
             <div *ngIf="canvases.loading" style="width: 5rem; height: 5rem">

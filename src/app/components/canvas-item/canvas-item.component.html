@@ -1,0 +1,20 @@
+<div *ngIf="data">
+    <div class="canvas-details">
+        id: {{ data.id }} <br />
+        title: {{ data.title }} <br />
+        created: {{ data.created }} <br />
+        owner: {{ data.owner }} <br />
+        collaborators: {{ data.collaborators }} <br />
+    </div>
+    <div class="canvas-controls">
+        <button (click)="handleCanvasDeleteDialog($event)" mat-mini-fab>
+            <mat-icon>delete</mat-icon>
+        </button>
+        <button (click)="handleCanvasEditDialog($event)" mat-mini-fab>
+            <mat-icon>edit</mat-icon>
+        </button>
+        <button (click)="handleCanvasShare($event)" mat-mini-fab>
+            <mat-icon>share</mat-icon>
+        </button>
+    </div>
+</div>
