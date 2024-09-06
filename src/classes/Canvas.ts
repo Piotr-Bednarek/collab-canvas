@@ -81,9 +81,9 @@ class Canvas {
         this.eraser = new Eraser([]);
 
         this.draw();
-        // this.addImageDrawing(
-        //     'https://cdn.butternutbox.com/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBNVA1QXc9PSIsImV4cCI6bnVsbCwicHVyIjoiYmxvYl9pZCJ9fQ==--a42522a8f65749f2fdd73d24a3edaa34f1d952de/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdCem9MWm05eWJXRjBPZ2wzWldKd09oSnlaWE5wZW1WZmRHOWZabWwwV3dkcEFyQUVhUUpZQWc9PSIsImV4cCI6bnVsbCwicHVyIjoidmFyaWF0aW9uIn19--b8ee90cfb113b226e9fc6ead29dc293e599be6e5/pexels-pixabay-532310.jpg'
-        // );
+        this.addImageDrawing(
+            'https://cdn.butternutbox.com/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBNVA1QXc9PSIsImV4cCI6bnVsbCwicHVyIjoiYmxvYl9pZCJ9fQ==--a42522a8f65749f2fdd73d24a3edaa34f1d952de/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdCem9MWm05eWJXRjBPZ2wzWldKd09oSnlaWE5wZW1WZmRHOWZabWwwV3dkcEFyQUVhUUpZQWc9PSIsImV4cCI6bnVsbCwicHVyIjoidmFyaWF0aW9uIn19--b8ee90cfb113b226e9fc6ead29dc293e599be6e5/pexels-pixabay-532310.jpg'
+        );
     }
 
     setTool(tool: SelectedTool) {

@@ -17,6 +17,9 @@ class Drawing implements DrawingInterface {
     fillStyle?: string;
     url?: string;
 
+    imageWidth?: number;
+    imageHeight?: number;
+
     originalPoints: Point[] | undefined;
     originalBounds: DrawingBounds | undefined;
 
@@ -84,6 +87,8 @@ class Drawing implements DrawingInterface {
             this.updateImageBounds();
             callback();
         };
+        this.imageWidth = this.preloadedImage.width;
+        this.imageHeight = this.preloadedImage.height;
     }
 
     constructAnchors(bounds: DrawingBounds) {
@@ -160,6 +165,8 @@ class Drawing implements DrawingInterface {
             return;
         }
 
+        console.log('type:', this.drawingType);
+
         this.updateBounds();
     }
 
@@ -188,20 +195,46 @@ class Drawing implements DrawingInterface {
     updateImageBounds() {
         if (!this.preloadedImage) return;
 
+        if (!this.imageHeight || !this.imageWidth) {
+            this.imageHeight = this.preloadedImage.height;
+            this.imageWidth = this.preloadedImage.width;
+        }
+
+        // console.log(this.imageHeight, this.imageWidth);
+        // console.log(this.points[0]);
+
+        if (this.isFinished && !this.originalBounds) {
+            // console.log('HERERRERER');
+            // console.log('HERERRERER');
+            // console.log('HERERRERER');
+            // console.log('HERERRERER');
+
+            this.originalBounds = {
+                top: this.points[0].y,
+                left: this.points[0].x,
+                bottom: this.points[0].y + this.imageHeight,
+                right: this.points[0].x + this.imageWidth,
+            };
+
+            this.bounds = { ...this.originalBounds };
+
+            // console.log('Original bounds:', this.originalBounds);
+            // console.log('Bounds:', this.bounds);
+
+            // this.bounds = {  };
+        }
+
+        if (!this.originalBounds) return;
+
         // console.log('Updating image bounds');
         // console.log('Image:', this.preloadedImage);
         // console.log('Points:', this.points);
 
-        this.bounds = {
-            top: this.points[0].y,
-            left: this.points[0].x,
-            bottom: this.points[0].y + this.preloadedImage.height,
-            right: this.points[0].x + this.preloadedImage.width,
-        };
+        this.imageHeight = this.bounds.bottom - this.bounds.top;
+        this.imageWidth = this.bounds.right - this.bounds.left;
 
         // console.log('Image bounds:', this.bounds);
-
-        this.originalBounds = { ...this.bounds };
+        // console.log('original bounds:', this.originalBounds);
 
         this.updateAnchors();
     }
@@ -291,8 +324,8 @@ class Drawing implements DrawingInterface {
             y: (point.y - this.offsetY) * scaleY + this.offsetY,
         }));
 
-        console.log('bounds1:', this.originalBounds);
-        console.log('bounds2:', this.bounds);
+        // console.log('bounds1:', this.originalBounds);
+        // console.log('bounds2:', this.bounds);
 
         // this.bounds = {
         //     top: Math.min(...this.points.map((p) => p.y)),
@@ -485,7 +518,20 @@ class Drawing implements DrawingInterface {
 
         // console.log('Drawing image:', this.preloadedImage);
 
-        ctx.drawImage(this.preloadedImage, this.points[0].x - translateX, this.points[0].y - translateY);
+        // ctx.drawImage(this.preloadedImage, this.points[0].x - translateX, this.points[0].y - translateY);
+        // draw the image based on width and height but keep the top left corner at the same position
+        // console.log('width: ', this.imageHeight);
+        // console.log('height: ', this.imageHeight);
+
+        // console.log(this.bounds);
+
+        ctx.drawImage(
+            this.preloadedImage,
+            this.bounds.left - translateX,
+            this.bounds.top - translateY,
+            this.imageWidth || this.preloadedImage.width,
+            this.imageHeight || this.preloadedImage.height
+        );
 
         // console.log(this.isFinished);
 
@@ -535,7 +581,9 @@ class Drawing implements DrawingInterface {
 
         this.originalPoints = [...this.points];
 
-        this.updateBounds();
+        if (this.drawingType === 'image') {
+            this.updateImageBounds();
+        } else this.updateBounds();
     }
 
     checkHoverAnchor(x: number, y: number) {
@@ -598,30 +646,6 @@ class Drawing implements DrawingInterface {
         this.isScalingDrawing = false;
     }
 
-    updateOriginalBounds() {
-        // console.log('Updating original bounds');
-        this.validateBounds();
-
-        this.originalBounds = { ...this.bounds };
-        this.originalPoints = [...this.points];
-    }
-
-    validateBounds() {
-        if (!this.bounds) return;
-
-        if (this.bounds.left > this.bounds.right) {
-            const temp = this.bounds.left;
-            this.bounds.left = this.bounds.right;
-            this.bounds.right = temp;
-        }
-
-        if (this.bounds.top > this.bounds.bottom) {
-            const temp = this.bounds.top;
-            this.bounds.top = this.bounds.bottom;
-            this.bounds.bottom = temp;
-        }
-    }
-
     handleMouseMove(x: number, y: number) {
         this.translateX += x;
         this.translateY += y;
@@ -660,6 +684,8 @@ class Drawing implements DrawingInterface {
                     break;
             }
 
+            // console.table(this.bounds);
+
             // Ensure bounds are updated correctly after scaling
 
             if (this.drawingType === 'image') {
@@ -678,7 +704,10 @@ class Drawing implements DrawingInterface {
             point.y += y;
         }
 
+        // console.log('Moving points:', this.points[0]);
+
         if (this.drawingType === 'image') {
+            this.updateImageBoundsAfterMove();
             this.updateImageBounds();
         } else {
             this.updateBoundsAfterMove();
@@ -697,6 +726,49 @@ class Drawing implements DrawingInterface {
         this.updateOriginalBounds();
 
         this.updateAnchors();
+    }
+
+    updateImageBoundsAfterMove() {
+        this.imageHeight = this.bounds.bottom - this.bounds.top;
+        this.imageWidth = this.bounds.right - this.bounds.left;
+
+        // console.log('Moving points:', this.points[0]);
+        // console.log('Moving points:', this.points[0]);
+
+        this.bounds = {
+            top: this.points[0].y,
+            left: this.points[0].x,
+            bottom: this.points[0].y + this.imageHeight,
+            right: this.points[0].x + this.imageWidth,
+        };
+
+        // this.updateOriginalBounds();
+
+        this.updateAnchors();
+    }
+
+    updateOriginalBounds() {
+        // console.log('Updating original bounds');
+        this.validateBounds();
+
+        this.originalBounds = { ...this.bounds };
+        this.originalPoints = [...this.points];
+    }
+
+    validateBounds() {
+        if (!this.bounds) return;
+
+        if (this.bounds.left > this.bounds.right) {
+            const temp = this.bounds.left;
+            this.bounds.left = this.bounds.right;
+            this.bounds.right = temp;
+        }
+
+        if (this.bounds.top > this.bounds.bottom) {
+            const temp = this.bounds.top;
+            this.bounds.top = this.bounds.bottom;
+            this.bounds.bottom = temp;
+        }
     }
 
     updateDrawingPoints(points: Point[]) {
