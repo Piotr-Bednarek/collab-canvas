@@ -45,7 +45,7 @@ export class SidebarComponent {
         '#808080',
     ];
 
-    selectedThicknessIndex: number = 0;
+    selectedThicknessIndex: number = 1;
     selectedColorIndex: number = 0;
 
     onThicknessChange(thicknessIndex: number) {

@@ -449,6 +449,26 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
     //     this.onToolSelected('eraser');
     // }
 
+    @HostListener('paste', ['$event'])
+    onPaste($event: ClipboardEvent) {
+        $event.preventDefault();
+        console.log('Pasting...');
+
+        const items = $event.clipboardData?.items;
+        if (items) {
+            for (const item of Array.from(items)) {
+                if (item.type.startsWith('image')) {
+                    const blob = item.getAsFile();
+
+                    if (blob) {
+                        console.log('Blob:', blob);
+                        this.canvas?.handleImagePaste(blob);
+                    }
+                }
+            }
+        }
+    }
+
     @HostListener('contextmenu', ['$event'])
     onRightClick($event: MouseEvent) {
         $event.preventDefault();

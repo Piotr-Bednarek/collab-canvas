@@ -12,9 +12,10 @@ class Drawing implements DrawingInterface {
     bounds: DrawingBounds;
     anchors: Anchor[] | undefined;
 
-    lineWidth: number;
-    strokeStyle: string;
-    fillStyle: string;
+    lineWidth?: number;
+    strokeStyle?: string;
+    fillStyle?: string;
+    url?: string;
 
     originalPoints: Point[] | undefined;
     originalBounds: DrawingBounds | undefined;
@@ -42,11 +43,14 @@ class Drawing implements DrawingInterface {
 
     addNextPoint: boolean = false;
 
+    private preloadedImage: HTMLImageElement | null = null;
+
     constructor(
         drawingType: DrawingType,
-        lineWidth: number,
-        strokeStyle: string,
-        fillStyle: string,
+        lineWidth?: number,
+        strokeStyle?: string,
+        fillStyle?: string,
+        url?: string,
         points: Point[] = [],
         id: string = uuidv4(),
         bounds: DrawingBounds = { top: 0, left: 0, bottom: 0, right: 0 },
@@ -56,6 +60,12 @@ class Drawing implements DrawingInterface {
         this.bounds = bounds;
         this.drawingType = drawingType;
 
+        this.url = url;
+
+        if (this.drawingType === 'image' && this.url) {
+            this.preloadImage(this.url, () => {});
+        }
+
         this.constructAnchors(this.bounds);
 
         this.id = id;
@@ -63,6 +73,17 @@ class Drawing implements DrawingInterface {
         this.lineWidth = lineWidth;
         this.strokeStyle = strokeStyle;
         this.fillStyle = fillStyle;
+    }
+
+    preloadImage(url: string, callback: () => void): void {
+        this.preloadedImage = new Image();
+        this.preloadedImage.src = url;
+
+        this.preloadedImage.onload = () => {
+            console.log('Image preloaded:', this.preloadedImage);
+            this.updateImageBounds();
+            callback();
+        };
     }
 
     constructAnchors(bounds: DrawingBounds) {
@@ -79,6 +100,9 @@ class Drawing implements DrawingInterface {
     }
 
     addPoint(point: Point) {
+        console.log('Adding point:', point);
+        console.log('drawing type:', this.drawingType);
+
         if (this.drawingType === 'freehand') {
             this.points.push(point);
         }
@@ -122,12 +146,27 @@ class Drawing implements DrawingInterface {
             }
         }
 
+        if (this.drawingType === 'image') {
+            if (this.points.length < 1) {
+                this.points.push(point);
+            } else {
+                this.points[0] = point;
+            }
+
+            console.log('Adding image point:', point);
+
+            this.updateImageBounds();
+
+            return;
+        }
+
         this.updateBounds();
     }
 
     updateBounds() {
         if (this.isFinished && !this.originalBounds) {
             console.log('Setting original bounds');
+
             this.originalBounds = {
                 top: Math.min(...this.points.map((p) => p.y)),
                 left: Math.min(...this.points.map((p) => p.x)),
@@ -142,6 +181,27 @@ class Drawing implements DrawingInterface {
         if (this.isScalingDrawing) {
             this.calculateScaledPoints();
         }
+
+        this.updateAnchors();
+    }
+
+    updateImageBounds() {
+        if (!this.preloadedImage) return;
+
+        // console.log('Updating image bounds');
+        // console.log('Image:', this.preloadedImage);
+        // console.log('Points:', this.points);
+
+        this.bounds = {
+            top: this.points[0].y,
+            left: this.points[0].x,
+            bottom: this.points[0].y + this.preloadedImage.height,
+            right: this.points[0].x + this.preloadedImage.width,
+        };
+
+        // console.log('Image bounds:', this.bounds);
+
+        this.originalBounds = { ...this.bounds };
 
         this.updateAnchors();
     }
@@ -258,10 +318,16 @@ class Drawing implements DrawingInterface {
         if (this.drawingType === 'ellipse') {
             this.drawEllipse(ctx, translateX, translateY);
         }
+
+        if (this.drawingType === 'image') {
+            this.drawImage(ctx, translateX, translateY);
+        }
     }
 
     drawFreehand(ctx: CanvasRenderingContext2D, translateX: number, translateY: number) {
         if (this.points.length < 1) return;
+
+        if (!this.strokeStyle || !this.lineWidth) return;
 
         ctx.strokeStyle = this.strokeStyle;
         ctx.lineWidth = this.lineWidth;
@@ -299,6 +365,8 @@ class Drawing implements DrawingInterface {
     drawLine(ctx: CanvasRenderingContext2D, translateX: number, translateY: number) {
         if (this.points.length < 2) return;
 
+        if (!this.strokeStyle || !this.lineWidth) return;
+
         ctx.strokeStyle = this.strokeStyle;
         ctx.lineWidth = this.lineWidth;
         ctx.lineCap = 'round';
@@ -325,6 +393,8 @@ class Drawing implements DrawingInterface {
 
     drawRectangle(ctx: CanvasRenderingContext2D, translateX: number, translateY: number) {
         if (this.points.length < 2) return;
+
+        if (!this.strokeStyle || !this.lineWidth || !this.fillStyle) return;
 
         ctx.strokeStyle = this.strokeStyle;
         ctx.lineWidth = this.lineWidth;
@@ -365,6 +435,8 @@ class Drawing implements DrawingInterface {
     drawEllipse(ctx: CanvasRenderingContext2D, translateX: number, translateY: number) {
         if (this.points.length < 2) return;
 
+        if (!this.strokeStyle || !this.lineWidth || !this.fillStyle) return;
+
         ctx.strokeStyle = this.strokeStyle;
         ctx.lineWidth = this.lineWidth;
         ctx.lineCap = 'round';
@@ -400,6 +472,23 @@ class Drawing implements DrawingInterface {
         ctx.stroke();
 
         // If the drawing is finished, draw the bounds rectangle (optional)
+        if (this.isFinished) {
+            this.drawBoundsRectangle(ctx, translateX, translateY);
+        }
+    }
+
+    drawImage(ctx: CanvasRenderingContext2D, translateX: number, translateY: number) {
+        if (!this.preloadedImage) return;
+        if (!this.points) return;
+
+        // console.log(this.points);
+
+        // console.log('Drawing image:', this.preloadedImage);
+
+        ctx.drawImage(this.preloadedImage, this.points[0].x - translateX, this.points[0].y - translateY);
+
+        // console.log(this.isFinished);
+
         if (this.isFinished) {
             this.drawBoundsRectangle(ctx, translateX, translateY);
         }
@@ -494,7 +583,7 @@ class Drawing implements DrawingInterface {
 
         this.clearSelectedAnchor();
 
-        console.table({ bounds: this.bounds, originalBounds: this.originalBounds });
+        // console.table({ bounds: this.bounds, originalBounds: this.originalBounds });
     }
 
     clearSelectedAnchor() {
@@ -572,7 +661,12 @@ class Drawing implements DrawingInterface {
             }
 
             // Ensure bounds are updated correctly after scaling
-            this.updateBounds();
+
+            if (this.drawingType === 'image') {
+                this.updateImageBounds();
+            } else {
+                this.updateBounds();
+            }
 
             return;
         }
@@ -584,9 +678,12 @@ class Drawing implements DrawingInterface {
             point.y += y;
         }
 
-        // Ensure bounds are updated correctly after moving
-        this.updateBoundsAfterMove();
-        this.updateBounds();
+        if (this.drawingType === 'image') {
+            this.updateImageBounds();
+        } else {
+            this.updateBoundsAfterMove();
+            this.updateBounds();
+        }
     }
 
     updateBoundsAfterMove() {

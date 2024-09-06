@@ -3,11 +3,12 @@ import { PointType } from './point';
 interface DrawingInterface {
     drawingType: DrawingType;
     id: string;
-    points: PointType[];
     bounds: DrawingBounds;
-    lineWidth: number;
-    strokeStyle: string;
-    fillStyle: string;
+    points?: PointType[];
+    lineWidth?: number;
+    strokeStyle?: string;
+    fillStyle?: string;
+    url?: string;
 }
 
 type DrawingType = 'freehand' | 'line' | 'rectangle' | 'ellipse' | 'text_field' | 'image';

@@ -81,6 +81,9 @@ class Canvas {
         this.eraser = new Eraser([]);
 
         this.draw();
+        // this.addImageDrawing(
+        //     'https://cdn.butternutbox.com/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBNVA1QXc9PSIsImV4cCI6bnVsbCwicHVyIjoiYmxvYl9pZCJ9fQ==--a42522a8f65749f2fdd73d24a3edaa34f1d952de/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdCem9MWm05eWJXRjBPZ2wzWldKd09oSnlaWE5wZW1WZmRHOWZabWwwV3dkcEFyQUVhUUpZQWc9PSIsImV4cCI6bnVsbCwicHVyIjoidmFyaWF0aW9uIn19--b8ee90cfb113b226e9fc6ead29dc293e599be6e5/pexels-pixabay-532310.jpg'
+        // );
     }
 
     setTool(tool: SelectedTool) {
@@ -173,6 +176,7 @@ class Canvas {
         }
         if (this.selectedTool === 'draw') {
             this.isDrawing = true;
+            this.addPointToDrawing($event.offsetX, $event.offsetY);
         }
 
         if (this.selectedTool === 'line') {
@@ -262,6 +266,8 @@ class Canvas {
         if (this.selectedTool === 'draw') {
             this.isDrawing = false;
             this.addDrawing();
+
+            console.log(this.drawings);
         }
 
         if (this.selectedTool === 'rectangle') {
@@ -283,6 +289,14 @@ class Canvas {
 
             this.eraser?.clearPoints();
         }
+    }
+
+    handleImagePaste(blob: Blob) {
+        console.log('image paste');
+
+        const url = URL.createObjectURL(blob);
+
+        this.addImageDrawing(url);
     }
 
     handleMovingCanvas(x: number, y: number) {
@@ -359,6 +373,23 @@ class Canvas {
         return true;
     }
 
+    addImageDrawing(url: string) {
+        //add points of middle of the screen
+        const x = 0;
+        const y = 0;
+        this.drawing = new Drawing('image', 1, 'black', '#FFFFFF', url, [new Point(x, y)]);
+
+        // this.drawing.addPoint(new Point(x, y));
+
+        this.drawing.preloadImage(url, () => {
+            this.drawing?.finish();
+            this.drawings.push(this.drawing!);
+            this.drawing = null;
+            console.log('Image drawing added');
+            this.draw();
+        });
+    }
+
     addPointToDrawing(x: number, y: number) {
         if (!this.drawing) {
             this.drawing = new Drawing(
@@ -402,11 +433,11 @@ class Canvas {
             this.scaleOriginY
         );
 
-        this.drawUnfinished();
-
         for (const drawing of this.drawings) {
             drawing.draw(this.context!, this.translateX, this.translateY);
         }
+
+        this.drawUnfinished();
 
         this.eraser?.draw(this.context!, this.translateX, this.translateY);
     }
