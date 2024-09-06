@@ -1,0 +1,27 @@
+.settings-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    // background-color: red;
+}
+
+.settings-group p {
+    margin: 0;
+    margin-right: 16px;
+    white-space: nowrap;
+    font-size: large;
+    // background-color: blue;
+}
+
+mat-form-field {
+    display: flex;
+    // background-color: green;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: -1.25em;
+}
+
+mat-dialog-content {
+    overflow-y: hidden;
+}

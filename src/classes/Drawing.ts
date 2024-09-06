@@ -793,6 +793,12 @@ class Drawing implements DrawingInterface {
         // console.log('Setting color:', color);
     }
 
+    setFillColor(color: string) {
+        this.fillStyle = color;
+
+        // console.log('Setting fill color:', color);
+    }
+
     exportDrawing() {
         return {
             points: this.points,

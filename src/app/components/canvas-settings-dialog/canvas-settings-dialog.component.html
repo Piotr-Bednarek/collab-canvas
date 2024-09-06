@@ -1,0 +1,45 @@
+<h2 mat-dialog-title>Settings</h2>
+<mat-dialog-content>
+    <div class="settings-group">
+        <p>Zoom sensitivity</p>
+        <mat-button-toggle-group aria-label="Zoom sensitivity">
+            <mat-button-toggle value="low">Low</mat-button-toggle>
+            <mat-button-toggle value="medium">Medium</mat-button-toggle>
+            <mat-button-toggle value="high">High</mat-button-toggle>
+        </mat-button-toggle-group>
+    </div>
+    <div class="settings-group">
+        <p>Pan sensitivity</p>
+        <mat-button-toggle-group aria-label="Pan sensitivity">
+            <mat-button-toggle value="low">Low</mat-button-toggle>
+            <mat-button-toggle value="medium">Medium</mat-button-toggle>
+            <mat-button-toggle value="high">High</mat-button-toggle>
+        </mat-button-toggle-group>
+    </div>
+    <div class="settings-group">
+        <p>Canvas background style</p>
+        <mat-form-field>
+            <mat-label>Background Style</mat-label>
+            <mat-select>
+                <mat-option value="solid">Solid</mat-option>
+                <mat-option value="gradient">Gradient</mat-option>
+                <mat-option value="pattern">Pattern</mat-option>
+            </mat-select>
+        </mat-form-field>
+    </div>
+    <div class="settings-group">
+        <p>Canvas color</p>
+        <mat-form-field>
+            <mat-label>Background color</mat-label>
+            <mat-select>
+                <mat-option value="solid">Black</mat-option>
+                <mat-option value="gradient">Gray</mat-option>
+                <mat-option value="pattern">White</mat-option>
+            </mat-select>
+        </mat-form-field>
+    </div>
+</mat-dialog-content>
+<mat-dialog-actions>
+    <button mat-button (click)="onNoClick()">Discard</button>
+    <button mat-button [mat-dialog-close]="true" (click)="onYesClick()" cdkFocusInitial>Save</button>
+</mat-dialog-actions>

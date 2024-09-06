@@ -2,6 +2,7 @@
     <div class="container">
         thickness: {{ thicknesses[selectedThicknessIndex] }}px <br />
         color: {{ colors[selectedColorIndex] }} <br />
+        fill color: {{ fillColors[selectedFillColorIndex] }} <br />
         <div class="pen-size">
             <app-thickness-button
                 [thickness]="thicknesses[0]"
@@ -37,26 +38,69 @@
         <div class="divider"></div>
         <div class="color-picker">
             <div *ngFor="let color of colors; let i = index">
-                <app-color-button
-                    (click)="onColorChange(i)"
-                    [color]="color"
-                    [isSelected]="selectedColorIndex === i"
-                ></app-color-button>
+                <ng-container *ngIf="selectedColorIndex != i; else elseTemplate">
+                    <button mat-mini-fab matTooltip="{{ colorsNames[i] }}" (click)="onColorChange(i)">
+                        <mat-icon [ngStyle]="{ color: color }">circle</mat-icon>
+                    </button>
+                </ng-container>
+                <ng-template #elseTemplate>
+                    <button mat-mini-fab disabled>
+                        <mat-icon [ngStyle]="{ color: color, opacity: '0.5' }">circle</mat-icon>
+                    </button>
+                </ng-template>
             </div>
         </div>
         <div class="divider"></div>
-        delete, copy, merge, undo, redo <br />
+        <div class="fill-color-picker">
+            <div *ngFor="let color of fillColors; let i = index">
+                <ng-container *ngIf="selectedFillColorIndex != i; else elseTemplate">
+                    <button mat-mini-fab matTooltip="{{ fillColorsNames[i] }}" (click)="onFillColorChange(i)">
+                        <mat-icon [ngStyle]="{ color: color }">format_color_fill</mat-icon>
+                    </button>
+                </ng-container>
+                <ng-template #elseTemplate>
+                    <button mat-mini-fab disabled>
+                        <mat-icon [ngStyle]="{ color: color }">format_color_fill</mat-icon>
+                    </button>
+                </ng-template>
+            </div>
+        </div>
+        <div class="divider"></div>
+        <div class="drawing-actions">
+            <button mat-mini-fab>
+                <mat-icon>delete</mat-icon>
+            </button>
+            <button mat-mini-fab>
+                <mat-icon>content_copy</mat-icon>
+            </button>
+            <button mat-mini-fab>
+                <mat-icon>join_inner</mat-icon>
+            </button>
+            <button mat-mini-fab (click)="handleCanvasSettingsDialog($event)">
+                <mat-icon>settings</mat-icon>
+            </button>
+        </div>
         collaborators
     </div>
     <div class="footer">
-        <button mat-icon-button (click)="handleZoomOutClick()">
-            <mat-icon>remove</mat-icon>
-        </button>
-        <button style="width: 5rem" mat-stroked-button (click)="handleZoomResetClick()">
-            {{ zoomValue }}
-        </button>
-        <button mat-icon-button (click)="handleZoomInClick()">
-            <mat-icon>add</mat-icon>
-        </button>
+        <div class="undo-redo-container">
+            <button mat-mini-fab>
+                <mat-icon>undo</mat-icon>
+            </button>
+            <button mat-mini-fab>
+                <mat-icon>redo</mat-icon>
+            </button>
+        </div>
+        <div class="zoom-container">
+            <button mat-icon-button (click)="handleZoomOutClick()">
+                <mat-icon>remove</mat-icon>
+            </button>
+            <button style="width: 5rem" mat-stroked-button (click)="handleZoomResetClick()">
+                {{ zoomValue }}
+            </button>
+            <button mat-icon-button (click)="handleZoomInClick()">
+                <mat-icon>add</mat-icon>
+            </button>
+        </div>
     </div>
 </div>

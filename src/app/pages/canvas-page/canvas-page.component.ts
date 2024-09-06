@@ -112,6 +112,11 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
         this.canvas?.setColor(color);
     }
 
+    onFillColorSelected(color: string): void {
+        // console.log('Fill color selected:', color);
+        this.canvas?.setFillColor(color);
+    }
+
     ngAfterViewInit(): void {
         this.canvasId = this.route.snapshot.paramMap.get('id');
 
