@@ -31,7 +31,7 @@
         </div>
 
         <div *ngIf="canvases$ | async as canvases" class="canvases-container">
-            <mat-grid-list cols="3" rowHeight="4:3" gutterSize="1rem" class="canvases-grid">
+            <mat-grid-list cols="3" rowHeight="2:1" gutterSize="1rem" class="canvases-grid">
                 <mat-grid-tile *ngFor="let canvas of canvases.data" class="canvas-container">
                     <app-canvas-item
                         [id]="canvas.id"
