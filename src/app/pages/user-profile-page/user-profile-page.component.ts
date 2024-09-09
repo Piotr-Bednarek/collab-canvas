@@ -31,9 +31,11 @@ import {
     MatDialogRef,
     MatDialogTitle,
 } from '@angular/material/dialog';
+import { MatGridListModule } from '@angular/material/grid-list';
 import { CanvasEditDialogComponent } from '../../components/canvas-edit-dialog/canvas-edit-dialog.component';
 import { CanvasItemComponent } from '../../components/canvas-item/canvas-item.component';
 import { CanvasRemoveDialogComponent } from '../../components/canvas-remove-dialog/canvas-remove-dialog.component';
+
 @Component({
     selector: 'app-user-profile-page',
     standalone: true,
@@ -46,6 +48,7 @@ import { CanvasRemoveDialogComponent } from '../../components/canvas-remove-dial
         MatButtonModule,
         MatProgressSpinnerModule,
         CanvasItemComponent,
+        MatGridListModule,
     ],
     templateUrl: './user-profile-page.component.html',
     styleUrl: './user-profile-page.component.scss',

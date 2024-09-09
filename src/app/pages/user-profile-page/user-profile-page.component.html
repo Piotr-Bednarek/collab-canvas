@@ -25,42 +25,20 @@
     <div class="project-container">
         <div class="project-top-bar">
             <div>Projects</div>
-            <!-- <div>VIEW MODE O/X</div> -->
             <button (click)="createNewCanvas()" mat-mini-fab>
                 <mat-icon>add</mat-icon>
             </button>
         </div>
 
-        <div *ngIf="canvases$ | async as canvases">
-            <div class="canvases-container">
-                <div
-                    *ngFor="let canvas of canvases.data"
-                    class="canvas-container"
-                    (click)="handleRoutingToCanvas(canvas.id)"
-                >
+        <div *ngIf="canvases$ | async as canvases" class="canvases-container">
+            <mat-grid-list cols="3" rowHeight="4:3" gutterSize="1rem" class="canvases-grid">
+                <mat-grid-tile *ngFor="let canvas of canvases.data" class="canvas-container">
                     <app-canvas-item
                         [id]="canvas.id"
                         (handleDelete)="handleCanvasDelete($event)"
                     ></app-canvas-item>
-
-                    <!-- <div class="canvas-details">
-                        <p>{{ canvas.title }} - {{ canvas.id }}</p>
-                        <p>Created: {{ canvas.created }}</p>
-                        <p>Last edited: {{ canvas.created }}</p>
-                    </div>
-                    <div class="canvas-controls">
-                        <button (click)="handleCanvasDeleteDialog(canvas.id, $event)" mat-mini-fab>
-                            <mat-icon>delete</mat-icon>
-                        </button>
-                        <button (click)="handleCanvasEditDialog(canvas.id, $event)" mat-mini-fab>
-                            <mat-icon>edit</mat-icon>
-                        </button>
-                    </div> -->
-                </div>
-            </div>
-            <div *ngIf="canvases.loading" style="width: 5rem; height: 5rem">
-                <mat-spinner></mat-spinner>
-            </div>
+                </mat-grid-tile>
+            </mat-grid-list>
         </div>
     </div>
 </main>

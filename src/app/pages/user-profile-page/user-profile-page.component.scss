@@ -17,6 +17,7 @@ mat-toolbar {
     height: 5rem;
     display: flex;
     gap: 1rem;
+    flex-shrink: 0;
 }
 
 mat-card-header {
@@ -83,7 +84,7 @@ mat-card-header {
     // background-color: yellow;
     display: flex;
     flex-direction: column;
-    flex-grow: 1;
+    height: calc(100vh - 5rem);
 }
 
 .project-top-bar {
@@ -98,39 +99,39 @@ mat-card-header {
     font-size: 1.4rem;
     border-top: 1px solid gray;
     border-bottom: 1px solid gray;
+    flex-shrink: 0;
 }
 
-.canvas-thumbnail {
-    width: 5rem;
-    height: 5rem;
-    border-radius: 1rem;
-    background-color: blue;
-}
+// .canvas-thumbnail {
+//     width: 5rem;
+//     height: 5rem;
+//     border-radius: 1rem;
+//     background-color: blue;
+// }
 
-.canvas-container {
-    display: flex;
-    justify-content: space-between;
-    // gap: 0.5rem;
-    background-color: lightgray;
-    border: 1px solid gray;
-    border-radius: 1rem;
-    padding: 1rem;
-    cursor: pointer;
-}
+// .canvas-container {
+//     display: flex;
+//     justify-content: space-between;
+//     // gap: 0.5rem;
+//     background-color: lightgray;
+//     border: 1px solid gray;
+//     border-radius: 1rem;
+//     cursor: pointer;
+// }
 
-.canvas-container:hover {
-    background-color: rgb(184, 184, 184);
-}
+// .canvas-container:hover {
+//     background-color: rgb(184, 184, 184);
+// }
 
-.canvas-container:active {
-    background-color: rgb(141, 141, 141);
-}
+// .canvas-container:active {
+//     background-color: rgb(141, 141, 141);
+// }
 
-.canvas-details {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-}
+// .canvas-details {
+//     display: flex;
+//     flex-direction: column;
+//     flex-grow: 1;
+// }
 
 .home-link {
     color: black;
@@ -146,11 +147,18 @@ mat-card-header {
 // }
 
 .canvases-container {
-    display: flex;
-    flex-direction: column;
+    flex-grow: 1;
+    overflow-y: auto;
+    // background-color: red;
+    background-color: gray;
+    width: 100%;
+    padding: 1rem;
+    box-sizing: border-box;
+}
 
-    gap: 1rem;
-    padding: 1rem 1rem;
+.canvases-grid {
+    width: inherit;
+    // background-color: green;
 }
 
 .loading {

@@ -9,12 +9,22 @@ import { CanvasItem } from '../../interfaces/canvases';
 import { CanvasEditDialogComponent } from '../canvas-edit-dialog/canvas-edit-dialog.component';
 import { CanvasRemoveDialogComponent } from '../canvas-remove-dialog/canvas-remove-dialog.component';
 
+import { MatCardModule } from '@angular/material/card';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
     selector: 'app-canvas-item',
     standalone: true,
-    imports: [CommonModule, MatIconModule, MatButtonModule],
+    imports: [
+        CommonModule,
+        MatIconModule,
+        MatButtonModule,
+        MatCardModule,
+        MatChipsModule,
+        MatExpansionModule,
+    ],
     templateUrl: './canvas-item.component.html',
     styleUrl: './canvas-item.component.scss',
 })
