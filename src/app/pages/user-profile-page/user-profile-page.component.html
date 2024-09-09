@@ -36,6 +36,7 @@
                     <app-canvas-item
                         [id]="canvas.id"
                         (handleDelete)="handleCanvasDelete($event)"
+                        (click)="handleRoutingToCanvas(canvas.id)"
                     ></app-canvas-item>
                 </mat-grid-tile>
             </mat-grid-list>

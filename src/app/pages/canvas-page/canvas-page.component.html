@@ -6,7 +6,10 @@
             </a>
         </div>
         {{ getSelectedTool() }}
-        <app-toolbar (toolSelected)="onToolSelected($event)"></app-toolbar>
+        <app-toolbar
+            [canChangeTool]="canChangeTool"
+            (selectedToolChange)="onToolSelected($event)"
+        ></app-toolbar>
     </div>
     <div class="main-container">
         <div class="sidebar">

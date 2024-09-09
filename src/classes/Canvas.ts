@@ -7,6 +7,7 @@ import { Point } from './Point';
 import { EventEmitter, Injectable } from '@angular/core';
 import { Auth } from '@angular/fire/auth';
 import { Firestore } from '@angular/fire/firestore';
+import { Observable } from 'rxjs';
 import { FirebaseDrawing } from '../app/firebase-drawing';
 import { DrawingType } from '../app/interfaces/drawing';
 import { SelectedTool } from '../app/interfaces/selected-tool';
@@ -21,6 +22,9 @@ class Canvas {
     // public onDrawingComplete: EventEmitter<Drawing> = new EventEmitter<Drawing>();
     // public onDrawingUpdate: EventEmitter<Drawing> = new EventEmitter<Drawing>();
     // public onClearSelect: EventEmitter<Drawing> = new EventEmitter<Drawing>();
+
+    public canChangeTool: EventEmitter<boolean> = new EventEmitter<boolean>();
+
     //-----------------------------------
 
     private selectedTool: SelectedTool = 'move';
@@ -118,7 +122,7 @@ class Canvas {
             this.selectedDrawingType = 'text_field';
         }
 
-        console.log('selected drawing type: ', this.selectedDrawingType);
+        // console.log('selected drawing type: ', this.selectedDrawingType);
 
         // if (tool === 'image') {
         //     this.selectedDrawingType = 'image';
@@ -235,6 +239,11 @@ class Canvas {
     handleMouseMove($event: MouseEvent) {
         // console.log('current drawing: ', this.drawing?.drawingType);
 
+        if (this.isMovingDrawing || this.isMoving || this.isDrawing || this.isErasing) {
+            this.canChangeTool.emit(false);
+            // console.log('can change tool: ', false);
+        }
+
         this.checkHover($event.offsetX, $event.offsetY);
         this.checkHoverAnchor($event.offsetX, $event.offsetY);
 
@@ -259,6 +268,8 @@ class Canvas {
             this.handleErasing();
             return;
         }
+
+        this.canChangeTool.emit(true);
     }
 
     handleMouseUp($event: MouseEvent) {
@@ -516,15 +527,15 @@ class Canvas {
 
         this.selectedDrawing = null;
 
-        console.log('clear after drawing move');
-        console.log('clear after drawing move');
-        console.log('clear after drawing move');
-        console.log('clear after drawing move');
+        // console.log('clear after drawing move');
+        // console.log('clear after drawing move');
+        // console.log('clear after drawing move');
+        // console.log('clear after drawing move');
     }
 
     clearSelected() {
-        console.log('-----------------------------------');
-        console.log('clear selected');
+        // console.log('-----------------------------------');
+        // console.log('clear selected');
 
         if (!this.selectedDrawing) return;
 
@@ -547,10 +558,10 @@ class Canvas {
 
         this.isMovingDrawing = false;
 
-        console.log('-----------------------------------');
-        console.log('selected: ', this.selectedDrawing);
-        console.log('selected: ', this.selectedDrawing);
-        console.log('-----------------------------------');
+        // console.log('-----------------------------------');
+        // console.log('selected: ', this.selectedDrawing);
+        // console.log('selected: ', this.selectedDrawing);
+        // console.log('-----------------------------------');
         // console.log('clear selected');
         // console.log('clear selected');
         // console.log('clear selected');

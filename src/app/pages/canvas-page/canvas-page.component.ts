@@ -5,7 +5,9 @@ import {
     ElementRef,
     HostListener,
     inject,
+    Input,
     OnDestroy,
+    Output,
     ViewChild,
 } from '@angular/core';
 import { Auth, User, user } from '@angular/fire/auth';
@@ -23,7 +25,7 @@ import {
     Unsubscribe,
     updateDoc,
 } from 'firebase/firestore';
-import { Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { Canvas } from '../../../classes/Canvas';
 import { FirebaseDrawing } from '../../firebase-drawing';
 
@@ -34,6 +36,7 @@ import { ToolbarComponent } from '../../components/toolbar/toolbar.component';
 
 import { SelectedTool } from '../../interfaces/selected-tool';
 
+import { FormsModule } from '@angular/forms';
 import { MatSliderModule } from '@angular/material/slider';
 
 @Component({
@@ -47,6 +50,7 @@ import { MatSliderModule } from '@angular/material/slider';
         ToolbarComponent,
         MatSliderModule,
         SidebarComponent,
+        FormsModule,
     ],
     templateUrl: './canvas-page.component.html',
     styleUrl: './canvas-page.component.scss',
@@ -93,13 +97,19 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
 
     thickness: number = 1;
 
+    canChangeTool: boolean = true;
+
     // private isDrawing: boolean = false;
     // private isMoving: boolean = false;
 
     lastAddedDrawingId: string | null = null;
 
-    onToolSelected(tool: string): void {
-        this.canvas?.setTool(tool as SelectedTool);
+    onToolSelected(tool: SelectedTool): void {
+        if (!this.canvas) return;
+
+        console.log('can change toool: ', this.canChangeTool);
+
+        this.canvas.setTool(tool);
     }
 
     onThicknessSelected(thickness: number): void {
@@ -127,6 +137,13 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
 
         this.adjustCanvasSize();
         this.canvas = new Canvas(this.canvasElementRef!, this.context!);
+
+        // how to subscribe to changes to the canvas.canChangeTool property?
+        this.canvas.canChangeTool.subscribe((canChangeTool: boolean) => {
+            console.log('Can change tool:', canChangeTool);
+
+            this.canChangeTool = canChangeTool;
+        });
 
         this.cdr.detectChanges();
 

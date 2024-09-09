@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, HostListener, Output } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, Output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule, MatIconRegistry } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -21,7 +21,10 @@ const LINE_ICON_OFF = `<svg xmlns="http://www.w3.org/2000/svg" height="24px" vie
     styleUrl: './toolbar.component.scss',
 })
 export class ToolbarComponent {
-    selectedTool: SelectedTool = 'move';
+    @Input() selectedTool: SelectedTool = 'move';
+    @Output() selectedToolChange = new EventEmitter<SelectedTool>();
+
+    @Input() canChangeTool: boolean = true;
 
     constructor(private iconRegistry: MatIconRegistry, sanitizer: DomSanitizer) {
         iconRegistry.addSvgIconLiteral('eraser-icon-on', sanitizer.bypassSecurityTrustHtml(ERASER_ICON_ON));
@@ -32,11 +35,17 @@ export class ToolbarComponent {
         iconRegistry.addSvgIconLiteral('line-icon-off', sanitizer.bypassSecurityTrustHtml(LINE_ICON_OFF));
     }
 
-    @Output() toolSelected = new EventEmitter<string>();
-
     selectTool(tool: SelectedTool): void {
+        console.log(this.canChangeTool);
+
+        if (!this.canChangeTool) {
+            return;
+        }
+
+        console.log('changing tool to', tool);
+
         this.selectedTool = tool;
-        this.toolSelected.emit(this.selectedTool);
+        this.selectedToolChange.emit(tool);
     }
 
     @HostListener('window:keydown.1', ['$event'])
