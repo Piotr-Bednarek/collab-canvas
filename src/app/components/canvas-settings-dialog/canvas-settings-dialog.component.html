@@ -2,7 +2,11 @@
 <mat-dialog-content>
     <div class="settings-group">
         <p>Zoom sensitivity</p>
-        <mat-button-toggle-group aria-label="Zoom sensitivity">
+        <mat-button-toggle-group
+            (change)="onPropertyChange($event, 'zoomSensitivity')"
+            [(ngModel)]="zoomSensitivity"
+            aria-label="Zoom sensitivity"
+        >
             <mat-button-toggle value="low">Low</mat-button-toggle>
             <mat-button-toggle value="medium">Medium</mat-button-toggle>
             <mat-button-toggle value="high">High</mat-button-toggle>
@@ -10,33 +14,69 @@
     </div>
     <div class="settings-group">
         <p>Pan sensitivity</p>
-        <mat-button-toggle-group aria-label="Pan sensitivity">
+        <mat-button-toggle-group
+            (change)="onPropertyChange($event, 'panSensitivity')"
+            [(ngModel)]="panSensitivity"
+            aria-label="Pan sensitivity"
+        >
             <mat-button-toggle value="low">Low</mat-button-toggle>
             <mat-button-toggle value="medium">Medium</mat-button-toggle>
             <mat-button-toggle value="high">High</mat-button-toggle>
         </mat-button-toggle-group>
     </div>
     <div class="settings-group">
-        <p>Canvas background style</p>
+        <p>Background style</p>
         <mat-form-field>
             <mat-label>Background Style</mat-label>
-            <mat-select>
+            <mat-select
+                (selectionChange)="onPropertyChange($event, 'backgroundStyle')"
+                [(ngModel)]="backgroundStyle"
+            >
+                <mat-option value="grid">Grid</mat-option>
+                <mat-option value="dots">Dots</mat-option>
                 <mat-option value="solid">Solid</mat-option>
-                <mat-option value="gradient">Gradient</mat-option>
-                <mat-option value="pattern">Pattern</mat-option>
             </mat-select>
         </mat-form-field>
     </div>
     <div class="settings-group">
-        <p>Canvas color</p>
+        <p>Background color</p>
         <mat-form-field>
-            <mat-label>Background color</mat-label>
-            <mat-select>
-                <mat-option value="solid">Black</mat-option>
-                <mat-option value="gradient">Gray</mat-option>
-                <mat-option value="pattern">White</mat-option>
+            <mat-label>Background Color</mat-label>
+            <mat-select
+                (selectionChange)="onPropertyChange($event, 'backgroundColor')"
+                [(ngModel)]="backgroundColor"
+            >
+                <mat-option value="white">White</mat-option>
+                <mat-option value="lightgray">Light Gray</mat-option>
+                <mat-option value="darkgray">Dark Gray</mat-option>
             </mat-select>
         </mat-form-field>
+    </div>
+    <div class="settings-group">
+        <p>Background pattern color</p>
+        <mat-form-field>
+            <mat-label>Pattern color</mat-label>
+            <mat-select
+                (selectionChange)="onPropertyChange($event, 'patternColor')"
+                [(ngModel)]="patternColor"
+            >
+                <mat-option value="gray">Gray</mat-option>
+                <mat-option value="white">White</mat-option>
+                <mat-option value="black">Black</mat-option>
+            </mat-select>
+        </mat-form-field>
+    </div>
+    <div class="settings-group">
+        <p>Pattern size</p>
+        <mat-button-toggle-group
+            (change)="onPropertyChange($event, 'patternSize')"
+            [(ngModel)]="patternSize"
+            aria-label="Pattern size"
+        >
+            <mat-button-toggle value="small">Small</mat-button-toggle>
+            <mat-button-toggle value="medium">Medium</mat-button-toggle>
+            <mat-button-toggle value="large">Large</mat-button-toggle>
+        </mat-button-toggle-group>
     </div>
 </mat-dialog-content>
 <mat-dialog-actions>

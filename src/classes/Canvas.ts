@@ -1,7 +1,8 @@
-import { CSP_NONCE, ElementRef, inject, Inject } from '@angular/core';
+import { ElementRef, inject, Inject } from '@angular/core';
+import { Background } from './Background';
 import { Drawing } from './Drawing';
 import { Eraser } from './Eraser';
-import { Grid } from './Grid';
+
 import { Point } from './Point';
 
 import { EventEmitter, Injectable } from '@angular/core';
@@ -9,6 +10,14 @@ import { Auth } from '@angular/fire/auth';
 import { Firestore } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { FirebaseDrawing } from '../app/firebase-drawing';
+import { BackgroundInterface } from '../app/interfaces/background';
+import {
+    backgroundColor,
+    backgroundStyle,
+    CanvasSettings,
+    patternColor,
+    patternSize,
+} from '../app/interfaces/canvas-settings';
 import { DrawingType } from '../app/interfaces/drawing';
 import { SelectedTool } from '../app/interfaces/selected-tool';
 
@@ -46,17 +55,26 @@ class Canvas {
     private canvasScaleMin: number = 0.2;
     private canvasScaleMax: number = 30;
 
-    private SCALE_BY = 1.05;
+    // private SCALE_BY = 1.05;
 
-    private WHEEL_PAN_SPEED = 30;
     private skipCheck: boolean = false;
+
+    //-----------------------------------
+
+    private zoomSensitivityValue: number = 0;
+    private panSensitivityValue: number = 0;
+
+    private backgroundStyle: backgroundStyle = 'grid';
+    private backgroundColor: backgroundColor = 'white';
+    private patternColor: patternColor = 'gray';
+    private patternSize: patternSize = 'medium';
 
     //-----------------------------------
 
     canvasElementRef: ElementRef | null = null;
     context: CanvasRenderingContext2D | null = null;
 
-    grid: Grid | null = null;
+    background: Background | null = null;
     eraser: Eraser | null = null;
 
     drawings: Drawing[] = [];
@@ -69,7 +87,7 @@ class Canvas {
     moveStartX: number = 0;
     moveStartY: number = 0;
 
-    gridSize = 40;
+    // gridSize = 40;
 
     drawing: Drawing | null = null;
 
@@ -78,10 +96,35 @@ class Canvas {
     scaleOriginX: number = 0;
     scaleOriginY: number = 0;
 
+    canvasSettings: CanvasSettings | null = null;
+
+    private zoomSensitivityMap: { [key: string]: number } = {
+        low: 1.03,
+        medium: 1.15,
+        high: 1.3,
+    };
+
+    private panSensitivityMap: { [key: string]: number } = {
+        low: 20,
+        medium: 30,
+        high: 50,
+    };
+
+    private patternSizeMap: { [key: string]: number } = {
+        small: 20,
+        medium: 40,
+        large: 60,
+    };
+
     constructor(canvasElementRef: ElementRef, context: CanvasRenderingContext2D) {
         this.canvasElementRef = canvasElementRef;
         this.context = context;
-        this.grid = new Grid('lines', 1, 'black', 0.2, this.gridSize);
+        this.background = new Background(
+            this.backgroundStyle,
+            this.backgroundColor,
+            this.patternSize,
+            this.patternColor
+        );
 
         this.eraser = new Eraser([]);
 
@@ -451,9 +494,11 @@ class Canvas {
     }
 
     draw() {
+        if (!this.context) return;
+
         this.clearAndScaleCanvas();
-        this.grid?.draw(
-            this.context!,
+        this.background?.draw(
+            this.context,
             this.translateX,
             this.translateY,
             this.canvasScale,
@@ -462,12 +507,12 @@ class Canvas {
         );
 
         for (const drawing of this.drawings) {
-            drawing.draw(this.context!, this.translateX, this.translateY);
+            drawing.draw(this.context, this.translateX, this.translateY);
         }
 
         this.drawUnfinished();
 
-        this.eraser?.draw(this.context!, this.translateX, this.translateY);
+        this.eraser?.draw(this.context, this.translateX, this.translateY);
     }
 
     drawUnfinished() {
@@ -647,6 +692,39 @@ class Canvas {
         }
     }
 
+    updateSettings(canvasSettings: CanvasSettings) {
+        // console.log('settings: ', canvasSettings);
+
+        // console.log('zoom: ', canvasSettings.zoomSensitivity);
+
+        this.zoomSensitivityValue = this.zoomSensitivityMap[canvasSettings.zoomSensitivity];
+        this.panSensitivityValue = this.panSensitivityMap[canvasSettings.panSensitivity];
+        // console.log('zoom: ', this.zoomSensitivityValue);
+
+        this.backgroundStyle = canvasSettings.backgroundStyle;
+        this.backgroundColor = canvasSettings.backgroundColor;
+        this.patternColor = canvasSettings.patternColor;
+        this.patternSize = canvasSettings.patternSize;
+
+        if (!this.background) return;
+
+        console.log('patternSize: ', this.patternSize);
+        console.log('patternSize: ', this.patternSize);
+        console.log('patternSize: ', this.patternSize);
+        console.log('patternSize: ', this.patternSize);
+
+        const backgroundInterface: BackgroundInterface = {
+            backgroundStyle: this.backgroundStyle,
+            backgroundColor: this.backgroundColor,
+            patternSize: this.patternSize,
+            patternColor: this.patternColor,
+        };
+
+        this.background.updateSettings(backgroundInterface);
+
+        this.draw();
+    }
+
     // handleFirebaseDrawing(drawing: FirebaseDrawing) {
     //     console.log('Adding drawing from firebase');
 
@@ -680,7 +758,7 @@ class Canvas {
     handleShiftWheel($event: WheelEvent) {
         if (!this.context) return;
 
-        const dx = $event.deltaY < 0 ? this.WHEEL_PAN_SPEED : -this.WHEEL_PAN_SPEED;
+        const dx = $event.deltaY < 0 ? this.panSensitivityValue : -this.panSensitivityValue;
 
         this.translateX -= dx / this.canvasScale;
 
@@ -690,7 +768,7 @@ class Canvas {
     handleWheelPan($event: WheelEvent) {
         if (!this.context) return;
 
-        const dy = $event.deltaY < 0 ? this.WHEEL_PAN_SPEED : -this.WHEEL_PAN_SPEED;
+        const dy = $event.deltaY < 0 ? this.panSensitivityValue : -this.panSensitivityValue;
 
         this.translateY -= dy / this.canvasScale;
 
@@ -703,12 +781,15 @@ class Canvas {
         const mouseX = $event.offsetX;
         const mouseY = $event.offsetY;
 
-        let scaleBy = this.SCALE_BY;
-        if ($event.deltaY > 0) {
-            scaleBy = 1 / this.SCALE_BY;
+        let _SCALE_BY = 0;
+
+        if ($event.deltaY < 0) {
+            _SCALE_BY = this.zoomSensitivityValue;
+        } else if ($event.deltaY > 0) {
+            _SCALE_BY = 1 / this.zoomSensitivityValue;
         }
 
-        this.calculateZoomValue(mouseX, mouseY, scaleBy);
+        this.calculateZoomValue(mouseX, mouseY, _SCALE_BY);
     }
 
     calculateZoomValue(originX: number, originY: number, scaleBy: number) {
@@ -756,13 +837,13 @@ class Canvas {
     zoomOut() {
         const canvasWidth = this.canvasElementRef?.nativeElement.width || 0;
         const canvasHeight = this.canvasElementRef?.nativeElement.height || 0;
-        this.calculateZoomValue(canvasWidth / 2, canvasHeight / 2, 1 / this.SCALE_BY / 1.5);
+        this.calculateZoomValue(canvasWidth / 2, canvasHeight / 2, 1 / this.zoomSensitivityValue / 1.5);
     }
 
     zoomIn() {
         const canvasWidth = this.canvasElementRef?.nativeElement.width || 0;
         const canvasHeight = this.canvasElementRef?.nativeElement.height || 0;
-        this.calculateZoomValue(canvasWidth / 2, canvasHeight / 2, this.SCALE_BY * 1.5);
+        this.calculateZoomValue(canvasWidth / 2, canvasHeight / 2, this.zoomSensitivityValue * 1.5);
     }
 }
 

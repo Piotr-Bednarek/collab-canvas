@@ -5,6 +5,15 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule, MatIconRegistry } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { DomSanitizer } from '@angular/platform-browser';
+import {
+    backgroundColor,
+    backgroundStyle,
+    CanvasSettings,
+    panSensitivity,
+    patternColor,
+    patternSize,
+    zoomSensitivity,
+} from '../../interfaces/canvas-settings';
 import { CanvasSettingsDialogComponent } from '../canvas-settings-dialog/canvas-settings-dialog.component';
 import { ThicknessButtonComponent } from '../thickness-button/thickness-button.component';
 
@@ -18,6 +27,8 @@ import { ThicknessButtonComponent } from '../thickness-button/thickness-button.c
 export class SidebarComponent {
     readonly dialog = inject(MatDialog);
 
+    private canvasSettings: CanvasSettings | null = null;
+
     @Input() zoomValue: string = '100%';
 
     @Output() zoomOutClicked = new EventEmitter<void>();
@@ -27,6 +38,25 @@ export class SidebarComponent {
     @Output() thicknessSelected = new EventEmitter<number>();
     @Output() colorSelected = new EventEmitter<string>();
     @Output() fillColorSelected = new EventEmitter<string>();
+
+    @Output() canvasSettingsChanged = new EventEmitter<CanvasSettings>();
+
+    constructor() {
+        const settings = localStorage.getItem('canvas_settings');
+        if (settings !== null) {
+            this.canvasSettings = JSON.parse(settings);
+        } else {
+            this.canvasSettings = {
+                zoomSensitivity: 'medium' as zoomSensitivity,
+                panSensitivity: 'medium' as panSensitivity,
+                backgroundStyle: 'grid' as backgroundStyle,
+                backgroundColor: 'white' as backgroundColor,
+                patternColor: 'gray' as patternColor,
+                patternSize: 'medium' as patternSize,
+            };
+            localStorage.setItem('canvas_settings', JSON.stringify(this.canvasSettings));
+        }
+    }
 
     iconNames: string[] = ['pen-size-1', 'pen-size-2', 'pen-size-3', 'pen-size-4', 'pen-size-5'];
 
@@ -96,12 +126,20 @@ export class SidebarComponent {
         event.stopPropagation();
 
         const dialogRef = this.dialog.open(CanvasSettingsDialogComponent, {
-            data: {},
+            data: this.canvasSettings,
         });
 
         dialogRef.afterClosed().subscribe((result) => {
             console.log('The dialog was closed:', result);
             if (result !== undefined) {
+                this.canvasSettings = result;
+                localStorage.setItem('canvas_settings', JSON.stringify(this.canvasSettings));
+
+                if (this.canvasSettings == null) return;
+
+                console.log('Emitting canvas settings...');
+
+                this.canvasSettingsChanged.emit(this.canvasSettings);
             }
         });
     }

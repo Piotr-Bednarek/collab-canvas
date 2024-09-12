@@ -38,6 +38,7 @@ import { SelectedTool } from '../../interfaces/selected-tool';
 
 import { FormsModule } from '@angular/forms';
 import { MatSliderModule } from '@angular/material/slider';
+import { CanvasSettings } from '../../interfaces/canvas-settings';
 
 @Component({
     selector: 'app-canvas-page',
@@ -95,12 +96,7 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
     private lastMouseMoveEvent: MouseEvent | null = null;
     isThrottled: any;
 
-    thickness: number = 1;
-
     canChangeTool: boolean = true;
-
-    // private isDrawing: boolean = false;
-    // private isMoving: boolean = false;
 
     lastAddedDrawingId: string | null = null;
 
@@ -138,9 +134,10 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
         this.adjustCanvasSize();
         this.canvas = new Canvas(this.canvasElementRef!, this.context!);
 
-        // how to subscribe to changes to the canvas.canChangeTool property?
+        this.getCanvasSettings();
+
         this.canvas.canChangeTool.subscribe((canChangeTool: boolean) => {
-            console.log('Can change tool:', canChangeTool);
+            // console.log('Can change tool:', canChangeTool);
 
             this.canChangeTool = canChangeTool;
         });
@@ -222,6 +219,21 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
     exportCanvas() {
         console.log('Exporting canvas...');
         this.canvas?.exportCanvas();
+    }
+
+    getCanvasSettings() {
+        if (!this.canvas) return;
+
+        const canvasSettingsJSON = localStorage.getItem('canvas_settings');
+
+        if (!canvasSettingsJSON) {
+            console.log('No canvas settings found in local storage.');
+            return;
+        }
+
+        const canvasSettings: CanvasSettings = JSON.parse(canvasSettingsJSON);
+
+        this.canvas.updateSettings(canvasSettings);
     }
 
     onMouseMove($event: MouseEvent) {
@@ -352,6 +364,15 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
         this.canvas.zoomIn();
     }
 
+    onCanvasSettingsChanged(canvasSettings: CanvasSettings) {
+        console.log('Canvas settings changed:', canvasSettings);
+        //TODO pass to canvas
+
+        if (!this.canvas) return;
+
+        this.canvas.updateSettings(canvasSettings);
+    }
+
     // onThicknessChange($event: any) {}
 
     // TODO check if user is authorized to add to this canvas
@@ -451,26 +472,6 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
     //     await updateDoc(docRef, convertedDrawing);
     // }
 
-    // @HostListener('window:keydown.1', ['$event'])
-    // handlePress1() {
-    //     this.onToolSelected('move');
-    // }
-
-    // @HostListener('window:keydown.2', ['$event'])
-    // handlePress2() {
-    //     this.onToolSelected('select');
-    // }
-
-    // @HostListener('window:keydown.3', ['$event'])
-    // handlePress3() {
-    //     this.onToolSelected('draw');
-    // }
-
-    // @HostListener('window:keydown.4', ['$event'])
-    // handlePress4() {
-    //     this.onToolSelected('eraser');
-    // }
-
     @HostListener('paste', ['$event'])
     onPaste($event: ClipboardEvent) {
         $event.preventDefault();
@@ -498,7 +499,7 @@ export class CanvasPageComponent implements AfterViewInit, OnDestroy {
 
     @HostListener('window:resize', ['$event'])
     onResize($event: Event) {
-        console.log('Resizing');
+        // console.log('Resizing');
         this.adjustCanvasSize();
     }
 }
